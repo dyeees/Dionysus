@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { Navbar } from './components/Navbar'
 import { MovieGrid } from './components/MovieGrid'
-import { CinemaGrid } from './components/CinemaGrid'
-import { NOW_SHOWING, COMING_SOON, CINEMAS } from './data'
+import { NOW_SHOWING, COMING_SOON } from './data'
 import './App.css'
 
-const TABS = ['Now Showing', 'Coming Soon', 'Cinemas']
+const TABS = ['Now Showing', 'Coming Soon']
 
 function App() {
   const [activeTab, setActiveTab] = useState('Now Showing')
@@ -20,15 +19,14 @@ function App() {
         <div 
           className="absolute inset-0 pointer-events-none border-y-[2px] border-[#DDBD68] rounded-3xl opacity-50"
           style={{
-            maskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)',
-            WebkitMaskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)'
+            maskImage: 'linear-gradient(to right, transparent, black 15%, black 85%, transparent)',
+            WebkitMaskImage: 'linear-gradient(to right, transparent, black 15%, black 85%, transparent)'
           }}
         />
         
         {/* Conditional Content Rendering */}
         {activeTab === 'Now Showing' && <MovieGrid movies={NOW_SHOWING} />}
         {activeTab === 'Coming Soon' && <MovieGrid movies={COMING_SOON} />}
-        {activeTab === 'Cinemas' && <CinemaGrid cinemas={CINEMAS} />}
       </main>
     </div>
   )

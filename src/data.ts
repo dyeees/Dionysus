@@ -4,13 +4,6 @@ export interface Movie {
   img: string;
 }
 
-export interface Cinema {
-  id: number;
-  name: string;
-  location: string;
-  screens: number;
-}
-
 export const NOW_SHOWING: Movie[] = [
   { id: 1, title: 'Neon Horizon', img: '/images/sci_fi_movie_poster_1784678342992.png' },
   { id: 2, title: 'Blade of Aether', img: '/images/fantasy_movie_poster_1784678352631.png' },
@@ -30,8 +23,3 @@ export const COMING_SOON: Movie[] = [
   { id: 13, title: 'Blade of Aether 2', img: '/images/fantasy_movie_poster_1784678352631.png' }
 ];
 
-export const CINEMAS: Cinema[] = [
-  { id: 1, name: 'Dionysus Grand Theater', location: 'Downtown', screens: 12 },
-  { id: 2, name: 'Starlight Cinema', location: 'North Mall', screens: 8 },
-  { id: 3, name: 'Metro IMAX', location: 'City Center', screens: 5 },
-];

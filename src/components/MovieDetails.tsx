@@ -98,17 +98,15 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
 
             {/* Times for selected date */}
             {movie.showtimes[selectedDateIndex] && (
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-500 mt-2">
-                <div className="flex flex-wrap gap-4">
-                  {movie.showtimes[selectedDateIndex].times.map(time => (
-                    <button 
-                      key={time} 
-                      className="px-8 py-4 bg-black/60 border border-[#DDBD68]/30 hover:border-[#DDBD68] hover:bg-[#DDBD68]/20 text-white rounded-xl transition-all duration-300 font-bold text-lg hover:shadow-[0_0_20px_rgba(221,189,104,0.3)] hover:-translate-y-1"
-                    >
-                      {time}
-                    </button>
-                  ))}
-                </div>
+              <div className="flex flex-wrap gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500 mt-4">
+                {movie.showtimes[selectedDateIndex].times.map(time => (
+                  <button 
+                    key={time} 
+                    className="px-8 py-4 bg-transparent border border-[#DDBD68]/30 hover:border-[#DDBD68] hover:bg-gradient-to-r hover:from-[#DDBD68] hover:via-[#FCEEAA] hover:to-[#DDBD68] hover:text-black text-[#DDBD68] rounded-xl transition-all duration-300 font-bold text-lg"
+                  >
+                    {time}
+                  </button>
+                ))}
               </div>
             )}
           </div>

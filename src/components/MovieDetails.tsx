@@ -3,10 +3,9 @@ import type { Movie } from '../data';
 
 interface MovieDetailsProps {
   movie: Movie;
-  onBack: () => void;
 }
 
-export function MovieDetails({ movie, onBack }: MovieDetailsProps) {
+export function MovieDetails({ movie }: MovieDetailsProps) {
   const [selectedDateIndex, setSelectedDateIndex] = useState(0);
 
   // Reset selected date when movie changes
@@ -17,10 +16,10 @@ export function MovieDetails({ movie, onBack }: MovieDetailsProps) {
   const hasShowtimes = movie.showtimes && movie.showtimes.length > 0;
 
   return (
-    <div className="flex flex-col animate-in fade-in duration-500 gap-12 pb-12">
+    <div className="flex flex-col animate-in fade-in duration-500 gap-12">
       
       {/* Top section: Poster + Details */}
-      <div className="flex flex-col lg:flex-row gap-12 items-start mt-4">
+      <div className="flex flex-col lg:flex-row gap-12 items-start">
         <div className="w-full lg:w-1/3 max-w-sm mx-auto lg:mx-0 shrink-0">
           <div className="w-full aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl border border-white/10">
             <img src={movie.img} alt={movie.title} className="w-full h-full object-cover" />

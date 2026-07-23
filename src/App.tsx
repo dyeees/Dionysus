@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Navbar } from './components/Navbar'
 import { MovieGrid } from './components/MovieGrid'
 import { MovieDetails } from './components/MovieDetails'
@@ -10,6 +10,22 @@ const TABS = ['NOW SHOWING', 'COMING SOON']
 function App() {
   const [activeTab, setActiveTab] = useState('NOW SHOWING')
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null)
+
+  useEffect(() => {
+    const handlePopState = () => {
+      // When the browser back button is pressed, go back to the grid
+      setSelectedMovie(null);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const handleMovieClick = (movie: Movie) => {
+    // Push a state so the browser back button can return here
+    window.history.pushState({ movieId: movie.id }, '', `#${movie.id}`);
+    setSelectedMovie(movie);
+  };
   return (
     <div className="min-h-screen text-white">
       <Navbar 
@@ -36,11 +52,11 @@ function App() {
         {/* Conditional Content Rendering */}
         {!selectedMovie ? (
           <>
-            {activeTab === 'NOW SHOWING' && <MovieGrid movies={NOW_SHOWING} onMovieClick={setSelectedMovie} />}
-            {activeTab === 'COMING SOON' && <MovieGrid movies={COMING_SOON} onMovieClick={setSelectedMovie} />}
+            {activeTab === 'NOW SHOWING' && <MovieGrid movies={NOW_SHOWING} onMovieClick={handleMovieClick} />}
+            {activeTab === 'COMING SOON' && <MovieGrid movies={COMING_SOON} onMovieClick={handleMovieClick} />}
           </>
         ) : (
-          <MovieDetails movie={selectedMovie} onBack={() => setSelectedMovie(null)} />
+          <MovieDetails movie={selectedMovie} />
         )}
       </main>
     </div>

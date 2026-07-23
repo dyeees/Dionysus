@@ -4,9 +4,10 @@ interface NavbarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   tabs: string[];
+  hideIndicator?: boolean;
 }
 
-export function Navbar({ activeTab, setActiveTab, tabs }: NavbarProps) {
+export function Navbar({ activeTab, setActiveTab, tabs, hideIndicator }: NavbarProps) {
   const tabsRef = useRef<(HTMLButtonElement | null)[]>([])
   const [lineStyle, setLineStyle] = useState({ left: 0, width: 0 })
 
@@ -51,9 +52,9 @@ export function Navbar({ activeTab, setActiveTab, tabs }: NavbarProps) {
             ref={(el) => { tabsRef.current[i] = el; }}
             onClick={() => setActiveTab(tab)}
             className={`transition-colors cursor-pointer py-1 ${
-              activeTab === tab 
+              !hideIndicator && activeTab === tab 
                 ? 'text-[#DDBD68]' 
-                : 'hover:text-[#DDBD68]'
+                : 'text-[#DDBD68]/70 hover:text-[#DDBD68]'
             }`}
           >
             {tab}
@@ -61,7 +62,7 @@ export function Navbar({ activeTab, setActiveTab, tabs }: NavbarProps) {
         ))}
         {/* Sliding Underline */}
         <div 
-          className="absolute bottom-0 h-[2px] bg-[#DDBD68] transition-all duration-300 ease-out"
+          className={`absolute bottom-0 h-[2px] bg-[#DDBD68] transition-all duration-300 ease-out ${hideIndicator ? 'opacity-0' : 'opacity-100'}`}
           style={{ left: `${lineStyle.left}px`, width: `${lineStyle.width}px` }}
         />
       </div>

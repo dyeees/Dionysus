@@ -27,33 +27,42 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
         </div>
         
         {/* Details section beside poster */}
-        <div className="flex-1 w-full flex flex-col gap-6 pt-2">
-          <h2 className="text-4xl md:text-6xl font-bold text-[#DDBD68] tracking-wide mb-2">{movie.title}</h2>
+        <div className="flex-1 w-full flex flex-col gap-4 pt-2">
+          <h2 
+            className="leading-tight font-black text-[#DDBD68] tracking-wider mb-2"
+            style={{ fontSize: 'clamp(1.25rem, 2vw, 2rem)' }}
+          >
+            {movie.title}
+          </h2>
           
           {movie.runtime && (
-            <div className="flex items-center text-white/70 text-lg uppercase tracking-widest font-medium">
-              <span>{movie.runtime}</span>
+            <div className="flex flex-col">
+              <span className="text-[#DDBD68]/70 uppercase text-sm tracking-widest font-bold leading-tight">Runtime</span>
+              <span className="text-white font-medium text-base leading-tight">{movie.runtime}</span>
             </div>
           )}
 
           {movie.synopsis && (
-            <p className="text-lg text-white/80 leading-relaxed max-w-3xl">
-              {movie.synopsis}
-            </p>
+            <div className="flex flex-col gap-1">
+              <span className="text-[#DDBD68]/70 uppercase text-sm tracking-widest font-bold leading-tight">Synopsis</span>
+              <p className="text-base text-white/80 leading-relaxed max-w-3xl">
+                {movie.synopsis}
+              </p>
+            </div>
           )}
 
           {(movie.director || movie.cast) && (
             <div className="flex flex-col gap-4 mt-6 pt-8 border-t border-white/10">
               {movie.director && (
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 items-start sm:items-center">
-                  <span className="text-[#DDBD68]/70 w-24 uppercase text-sm tracking-widest font-bold">Director</span>
-                  <span className="text-white font-medium text-lg">{movie.director}</span>
+                <div className="flex flex-col">
+                  <span className="text-[#DDBD68]/70 uppercase text-sm tracking-widest font-bold leading-tight">Director</span>
+                  <span className="text-white font-medium text-base leading-tight">{movie.director}</span>
                 </div>
               )}
               {movie.cast && (
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 items-start sm:items-center">
-                  <span className="text-[#DDBD68]/70 w-24 uppercase text-sm tracking-widest font-bold">Cast</span>
-                  <span className="text-white font-medium text-lg leading-relaxed">{movie.cast}</span>
+                <div className="flex flex-col">
+                  <span className="text-[#DDBD68]/70 uppercase text-sm tracking-widest font-bold leading-tight">Cast</span>
+                  <span className="text-white font-medium text-base leading-tight">{movie.cast}</span>
                 </div>
               )}
             </div>

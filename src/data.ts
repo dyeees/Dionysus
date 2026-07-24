@@ -25,12 +25,12 @@ const defaultDetails = {
 };
 
 const defaultShowtimes: ShowtimeDate[] = [
-  { isToday: true, times: ['10:00 AM', '1:15 PM', '4:30 PM', '7:45 PM', '10:30 PM'] },
-  { dayOfWeek: 'FRI', day: '24', month: 'JUL', times: ['11:00 AM', '2:00 PM', '5:00 PM', '8:00 PM'] },
-  { dayOfWeek: 'SAT', day: '25', month: 'JUL', times: ['9:30 AM', '12:45 PM', '4:00 PM', '7:15 PM'] },
-  { dayOfWeek: 'SUN', day: '26', month: 'JUL', times: ['10:30 AM', '1:30 PM', '4:30 PM', '7:30 PM'] },
-  { dayOfWeek: 'MON', day: '27', month: 'JUL', times: ['6:00 PM', '8:30 PM', '11:00 PM'] },
-  { dayOfWeek: 'TUE', day: '28', month: 'JUL', times: ['7:00 PM', '9:30 PM'] }
+  { isToday: true, times: ['10:00', '13:15', '16:30', '19:45'] },
+  { dayOfWeek: 'FRI', day: '24', month: 'JUL', times: ['11:00', '14:00', '17:00', '20:00'] },
+  { dayOfWeek: 'SAT', day: '25', month: 'JUL', times: ['09:30', '12:45', '16:00', '19:15'] },
+  { dayOfWeek: 'SUN', day: '26', month: 'JUL', times: ['10:30', '13:30', '16:30', '19:30'] },
+  { dayOfWeek: 'MON', day: '27', month: 'JUL', times: ['18:00', '20:30', '23:00'] },
+  { dayOfWeek: 'TUE', day: '28', month: 'JUL', times: ['19:00', '21:30'] }
 ];
 
 export const NOW_SHOWING: Movie[] = [

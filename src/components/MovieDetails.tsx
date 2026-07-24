@@ -6,12 +6,7 @@ interface MovieDetailsProps {
 }
 
 export function MovieDetails({ movie }: MovieDetailsProps) {
-  const [selectedDateIndex, setSelectedDateIndex] = useState(0);
 
-  // Reset selected date when movie changes
-  useEffect(() => {
-    setSelectedDateIndex(0);
-  }, [movie.id]);
 
   const hasShowtimes = movie.showtimes && movie.showtimes.length > 0;
 
@@ -37,15 +32,15 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
           
           {movie.runtime && (
             <div className="flex flex-col">
-              <span className="text-[#DDBD68]/70 uppercase text-sm tracking-widest font-bold leading-tight">Runtime</span>
-              <span className="text-[#FCEEAA] font-medium text-base leading-tight">{movie.runtime}</span>
+              <span className="text-[#FCEEAA] uppercase text-sm tracking-widest font-bold leading-tight">Runtime</span>
+              <span className="text-[#DDBD68] font-medium text-base leading-tight">{movie.runtime}</span>
             </div>
           )}
 
           {movie.synopsis && (
             <div className="flex flex-col gap-1">
-              <span className="text-[#DDBD68]/70 uppercase text-sm tracking-widest font-bold leading-tight">Synopsis</span>
-              <p className="text-base text-[#FCEEAA]/80 leading-relaxed max-w-3xl">
+              <span className="text-[#FCEEAA] uppercase text-sm tracking-widest font-bold leading-tight">Synopsis</span>
+              <p className="text-base text-[#DDBD68] leading-relaxed max-w-3xl">
                 {movie.synopsis}
               </p>
             </div>
@@ -55,14 +50,14 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
             <div className="flex flex-col gap-4 mt-6 pt-8 border-t border-white/10">
               {movie.director && (
                 <div className="flex flex-col">
-                  <span className="text-[#DDBD68]/70 uppercase text-sm tracking-widest font-bold leading-tight">Director</span>
-                  <span className="text-[#FCEEAA] font-medium text-base leading-tight">{movie.director}</span>
+                  <span className="text-[#FCEEAA] uppercase text-sm tracking-widest font-bold leading-tight">Director</span>
+                  <span className="text-[#DDBD68] font-medium text-base leading-tight">{movie.director}</span>
                 </div>
               )}
               {movie.cast && (
                 <div className="flex flex-col">
-                  <span className="text-[#DDBD68]/70 uppercase text-sm tracking-widest font-bold leading-tight">Cast</span>
-                  <span className="text-[#FCEEAA] font-medium text-base leading-tight">{movie.cast}</span>
+                  <span className="text-[#FCEEAA] uppercase text-sm tracking-widest font-bold leading-tight">Cast</span>
+                  <span className="text-[#DDBD68] font-medium text-base leading-tight">{movie.cast}</span>
                 </div>
               )}
             </div>
@@ -71,53 +66,29 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
       </div>
 
       {/* Bottom section: Showtimes */}
-      <div className="w-full pt-12 border-t border-white/10">
-        <h3 className="text-3xl font-bold mb-10 text-[#DDBD68] uppercase tracking-widest">Showtimes</h3>
+      <div className="w-full pt-6 border-t border-white/10">
+        <h3 className="text-2xl font-bold mb-4 text-[#DDBD68] tracking-widest">Showtimes</h3>
         
         {hasShowtimes ? (
-          <div className="flex flex-col gap-4">
-            {/* Date Tabs */}
-            <div className="flex flex-wrap gap-4 border-b border-white/10 pb-6">
-              {movie.showtimes.map((dateObj, idx) => {
-                const isActive = selectedDateIndex === idx;
-                
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedDateIndex(idx)}
-                    className={`flex flex-col items-center justify-center w-[5.5rem] h-[5.5rem] rounded-xl transition-all duration-300 ${
-                      isActive 
-                        ? 'bg-[#DDBD68] text-black shadow-[0_0_20px_rgba(221,189,104,0.4)]' 
-                        : 'bg-white/5 text-[#DDBD68]/70 hover:bg-white/10 hover:text-[#DDBD68] border border-white/10'
-                    }`}
-                  >
-                    {dateObj.isToday ? (
-                      <span className="font-bold text-lg uppercase tracking-wider">Today</span>
-                    ) : (
-                      <>
-                        <span className="text-[11px] font-bold tracking-widest uppercase">{dateObj.dayOfWeek}</span>
-                        <span className="text-2xl font-black my-0.5 leading-none">{dateObj.day}</span>
-                        <span className="text-[11px] font-bold tracking-widest uppercase">{dateObj.month}</span>
-                      </>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Times for selected date */}
-            {movie.showtimes[selectedDateIndex] && (
-              <div className="flex flex-wrap gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500 mt-4">
-                {movie.showtimes[selectedDateIndex].times.map(time => (
-                  <button 
-                    key={time} 
-                    className="px-8 py-4 bg-transparent border border-[#DDBD68]/30 hover:border-[#DDBD68] hover:bg-gradient-to-r hover:from-[#DDBD68] hover:via-[#FCEEAA] hover:to-[#DDBD68] hover:text-black text-[#DDBD68] rounded-xl transition-all duration-300 font-bold text-lg"
-                  >
-                    {time}
-                  </button>
-                ))}
+          <div className="flex flex-col divide-y divide-white/10">
+            {movie.showtimes.map((dateObj, idx) => (
+              <div key={idx} className="flex flex-wrap gap-4 py-6 first:pt-0 last:pb-0 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                {dateObj.times.slice(0, 4).map(time => {
+                  const dateText = dateObj.isToday 
+                    ? 'TODAY' 
+                    : `${dateObj.dayOfWeek} ${dateObj.day} ${dateObj.month}`;
+                    
+                  return (
+                    <button 
+                      key={time} 
+                      className="w-48 py-2.5 text-center bg-transparent border border-[#DDBD68]/30 hover:border-[#DDBD68] hover:bg-gradient-to-r hover:from-[#DDBD68] hover:via-[#FCEEAA] hover:to-[#DDBD68] hover:text-black text-[#DDBD68] rounded-lg transition-all duration-300 font-bold text-sm whitespace-nowrap"
+                    >
+                      {dateText} &bull; {time}
+                    </button>
+                  );
+                })}
               </div>
-            )}
+            ))}
           </div>
         ) : (
           <div className="bg-white/5 border border-white/10 rounded-2xl p-12 text-center">

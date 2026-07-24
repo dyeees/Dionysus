@@ -31,7 +31,7 @@ export function Navbar({ activeTab, setActiveTab, tabs, hideIndicator }: NavbarP
   }, [activeTab, tabs])
 
   return (
-    <nav className="relative flex items-center justify-between px-24 md:px-48 lg:px-68 py-2 bg-[#0C0C0C] shadow-lg border-y-[4px] border-transparent mt-6">
+    <nav className="relative flex items-center justify-between px-24 md:px-48 lg:px-68 py-2 bg-[#0C0C0C] shadow-lg border-y-[4px] border-transparent">
       {/* Fading Border Overlay */}
       <div 
         className="absolute -inset-y-[4px] inset-x-0 pointer-events-none border-y-[4px] border-double border-[#DDBD68]"

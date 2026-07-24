@@ -38,14 +38,14 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
           {movie.runtime && (
             <div className="flex flex-col">
               <span className="text-[#DDBD68]/70 uppercase text-sm tracking-widest font-bold leading-tight">Runtime</span>
-              <span className="text-white font-medium text-base leading-tight">{movie.runtime}</span>
+              <span className="text-[#FCEEAA] font-medium text-base leading-tight">{movie.runtime}</span>
             </div>
           )}
 
           {movie.synopsis && (
             <div className="flex flex-col gap-1">
               <span className="text-[#DDBD68]/70 uppercase text-sm tracking-widest font-bold leading-tight">Synopsis</span>
-              <p className="text-base text-white/80 leading-relaxed max-w-3xl">
+              <p className="text-base text-[#FCEEAA]/80 leading-relaxed max-w-3xl">
                 {movie.synopsis}
               </p>
             </div>
@@ -56,13 +56,13 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
               {movie.director && (
                 <div className="flex flex-col">
                   <span className="text-[#DDBD68]/70 uppercase text-sm tracking-widest font-bold leading-tight">Director</span>
-                  <span className="text-white font-medium text-base leading-tight">{movie.director}</span>
+                  <span className="text-[#FCEEAA] font-medium text-base leading-tight">{movie.director}</span>
                 </div>
               )}
               {movie.cast && (
                 <div className="flex flex-col">
                   <span className="text-[#DDBD68]/70 uppercase text-sm tracking-widest font-bold leading-tight">Cast</span>
-                  <span className="text-white font-medium text-base leading-tight">{movie.cast}</span>
+                  <span className="text-[#FCEEAA] font-medium text-base leading-tight">{movie.cast}</span>
                 </div>
               )}
             </div>
@@ -72,7 +72,7 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
 
       {/* Bottom section: Showtimes */}
       <div className="w-full pt-12 border-t border-white/10">
-        <h3 className="text-3xl font-bold mb-10 text-white uppercase tracking-widest">Showtimes</h3>
+        <h3 className="text-3xl font-bold mb-10 text-[#DDBD68] uppercase tracking-widest">Showtimes</h3>
         
         {hasShowtimes ? (
           <div className="flex flex-col gap-4">
@@ -88,7 +88,7 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
                     className={`flex flex-col items-center justify-center w-[5.5rem] h-[5.5rem] rounded-xl transition-all duration-300 ${
                       isActive 
                         ? 'bg-[#DDBD68] text-black shadow-[0_0_20px_rgba(221,189,104,0.4)]' 
-                        : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white border border-white/10'
+                        : 'bg-white/5 text-[#DDBD68]/70 hover:bg-white/10 hover:text-[#DDBD68] border border-white/10'
                     }`}
                   >
                     {dateObj.isToday ? (
@@ -121,7 +121,7 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
           </div>
         ) : (
           <div className="bg-white/5 border border-white/10 rounded-2xl p-12 text-center">
-            <p className="text-2xl text-white/50 italic">Showtimes not available yet for this movie.</p>
+            <p className="text-2xl text-[#DDBD68]/50 italic">Showtimes not available yet for this movie.</p>
           </div>
         )}
       </div>

@@ -27,7 +27,7 @@ function App() {
     setSelectedMovie(movie);
   };
   return (
-    <div className="min-h-screen text-white">
+    <div className="min-h-screen text-[#DDBD68]">
       <Navbar 
         activeTab={activeTab} 
         setActiveTab={(tab) => {

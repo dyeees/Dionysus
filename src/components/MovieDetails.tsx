@@ -67,7 +67,7 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
 
       {/* Bottom section: Showtimes */}
       <div className="w-full pt-6 border-t border-white/10">
-        <h3 className="text-2xl font-bold mb-4 text-[#DDBD68] tracking-widest">Showtimes</h3>
+        <h3 className="text-2xl font-bold mb-4 text-[#DDBD68] tracking-widest">Showtimes Selection</h3>
         
         {hasShowtimes ? (
           <div className="flex flex-col divide-y divide-white/10">
@@ -81,7 +81,7 @@ export function MovieDetails({ movie }: MovieDetailsProps) {
                   return (
                     <button 
                       key={time} 
-                      className="w-48 py-2.5 text-center bg-transparent border border-[#DDBD68]/30 hover:border-[#DDBD68] hover:bg-gradient-to-r hover:from-[#DDBD68] hover:via-[#FCEEAA] hover:to-[#DDBD68] hover:text-black text-[#DDBD68] rounded-lg transition-all duration-300 font-bold text-sm whitespace-nowrap"
+                      className="w-40 py-1.5 text-center bg-transparent border border-[#DDBD68]/30 hover:border-[#DDBD68] hover:bg-gradient-to-r hover:from-[#DDBD68] hover:via-[#FCEEAA] hover:to-[#DDBD68] hover:text-black text-[#DDBD68] rounded-lg transition-all duration-300 font-['Lexend'] text-sm whitespace-nowrap"
                     >
                       {dateText} &bull; {time}
                     </button>

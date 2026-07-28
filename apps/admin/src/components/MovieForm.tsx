@@ -1,8 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Upload, Plus, X, Loader2, CheckCircle2 } from 'lucide-react';
-import { addMovie, type ApiMovie, type ShowtimeDate } from '../api';
+import { addMovie, updateMovie, type ApiMovie, type ShowtimeDate } from '../api';
 
-export function AddMovieForm() {
+interface MovieFormProps {
+  initialData?: ApiMovie | null;
+  onSaved: () => void;
+}
+
+export function MovieForm({ initialData, onSaved }: MovieFormProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -21,6 +26,25 @@ export function AddMovieForm() {
   const [showtimes, setShowtimes] = useState<ShowtimeDate[]>([
     { date: '', times: [''] }
   ]);
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        title: initialData.title || '',
+        runtime: initialData.runtime || '',
+        synopsis: initialData.synopsis || '',
+        director: initialData.director || '',
+        cast: initialData.cast || '',
+        status: initialData.status || 'now_showing',
+      });
+      if (initialData.showtimes && initialData.showtimes.length > 0) {
+        setShowtimes(initialData.showtimes);
+      } else {
+        setShowtimes([{ date: '', times: [''] }]);
+      }
+      setImagePreview(initialData.img);
+    }
+  }, [initialData]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -66,38 +90,40 @@ export function AddMovieForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!imageFile) {
+    if (!initialData && !imageFile) {
       alert("Please select a movie poster");
       return;
     }
 
     setIsSubmitting(true);
-    setIsUploading(true);
 
     try {
-      // 1. Upload to Cloudinary
-      const cloudName = 'zetriroz';
-      const uploadPreset = 'dionysus_uploads';
-      
-      const formDataUpload = new FormData();
-      formDataUpload.append('file', imageFile);
-      formDataUpload.append('upload_preset', uploadPreset);
+      let imageUrl = initialData?.img || '';
 
-      const cloudinaryRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-        method: 'POST',
-        body: formDataUpload
-      });
+      if (imageFile) {
+        setIsUploading(true);
+        // Upload to Cloudinary
+        const cloudName = 'zetriroz';
+        const uploadPreset = 'dionysus_uploads';
+        
+        const formDataUpload = new FormData();
+        formDataUpload.append('file', imageFile);
+        formDataUpload.append('upload_preset', uploadPreset);
 
-      const cloudinaryData = await cloudinaryRes.json();
-      
-      if (!cloudinaryRes.ok) {
-        throw new Error(cloudinaryData.error?.message || 'Failed to upload image');
+        const cloudinaryRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+          method: 'POST',
+          body: formDataUpload
+        });
+
+        const cloudinaryData = await cloudinaryRes.json();
+        if (!cloudinaryRes.ok) {
+          throw new Error(cloudinaryData.error?.message || 'Failed to upload image');
+        }
+        imageUrl = cloudinaryData.secure_url;
+        setIsUploading(false);
       }
 
-      const imageUrl = cloudinaryData.secure_url;
-      setIsUploading(false);
-
-      // 2. Save to Firebase
+      // Save to Firebase
       const movieToSave: ApiMovie = {
         title: formData.title,
         director: formData.director,
@@ -109,22 +135,21 @@ export function AddMovieForm() {
         showtimes: formData.status === 'now_showing' ? showtimes.filter(s => s.date && s.times.some(t => t)) : []
       };
 
-      await addMovie(movieToSave);
+      if (initialData?.id) {
+        await updateMovie(initialData.id, movieToSave);
+      } else {
+        await addMovie(movieToSave);
+      }
       
       setSuccess(true);
-      // Reset form
-      setFormData({
-        title: '', runtime: '', synopsis: '', director: '', cast: '', status: 'now_showing'
-      });
-      setShowtimes([{ date: '', times: [''] }]);
-      setImageFile(null);
-      setImagePreview(null);
-      
-      setTimeout(() => setSuccess(false), 3000);
+      setTimeout(() => {
+        setSuccess(false);
+        onSaved(); // Return to dashboard
+      }, 1500);
       
     } catch (error) {
       console.error(error);
-      alert("Error adding movie: " + (error as Error).message);
+      alert("Error saving movie: " + (error as Error).message);
     } finally {
       setIsSubmitting(false);
       setIsUploading(false);
@@ -134,14 +159,16 @@ export function AddMovieForm() {
   return (
     <div className="max-w-4xl mx-auto pt-32 pb-20 px-6">
       <div className="mb-10 text-center">
-        <h1 className="font-serif text-4xl text-white mb-2">Add New Movie</h1>
+        <h1 className="font-serif text-4xl text-white mb-2">
+          {initialData ? 'Edit Movie' : 'Add New Movie'}
+        </h1>
         <p className="text-white/40 tracking-widest text-sm">DIONYSUS ADMINISTRATION</p>
       </div>
 
       {success && (
         <div className="mb-8 p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center justify-center gap-3 text-green-400">
           <CheckCircle2 className="w-5 h-5" />
-          <span>Movie successfully added to database!</span>
+          <span>Movie successfully saved!</span>
         </div>
       )}
 
@@ -181,10 +208,15 @@ export function AddMovieForm() {
           <div>
             <label className="block text-sm font-medium text-white/60 mb-2">Movie Poster</label>
             <div className="relative group h-[400px] w-full border-2 border-dashed border-white/10 rounded-2xl overflow-hidden hover:border-[#DDBD68]/50 transition-colors bg-[#1A1A1A] flex flex-col items-center justify-center cursor-pointer">
-              <input type="file" required accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+              <input type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
               
               {imagePreview ? (
-                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                <div className="relative w-full h-full">
+                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                    <span className="text-white text-sm font-medium bg-black/50 px-4 py-2 rounded-lg backdrop-blur-sm">Click to change poster</span>
+                  </div>
+                </div>
               ) : (
                 <div className="text-center p-6">
                   <Upload className="w-10 h-10 text-white/20 mx-auto mb-4 group-hover:text-[#DDBD68] transition-colors" />
@@ -277,7 +309,7 @@ export function AddMovieForm() {
               {isUploading ? 'UPLOADING POSTER...' : 'SAVING MOVIE...'}
             </>
           ) : (
-            'ADD MOVIE TO DATABASE'
+            initialData ? 'SAVE CHANGES' : 'ADD MOVIE TO DATABASE'
           )}
         </button>
       </form>

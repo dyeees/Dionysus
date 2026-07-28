@@ -20,6 +20,7 @@ export function MovieForm({ initialData, onSaved }: MovieFormProps) {
     synopsis: '',
     director: '',
     cast: '',
+    trailerUrl: '',
     status: 'now_showing' as 'now_showing' | 'coming_soon',
   });
 
@@ -35,6 +36,7 @@ export function MovieForm({ initialData, onSaved }: MovieFormProps) {
         synopsis: initialData.synopsis || '',
         director: initialData.director || '',
         cast: initialData.cast || '',
+        trailerUrl: initialData.trailerUrl || '',
         status: initialData.status || 'now_showing',
       });
       if (initialData.showtimes && initialData.showtimes.length > 0) {
@@ -130,6 +132,7 @@ export function MovieForm({ initialData, onSaved }: MovieFormProps) {
         cast: formData.cast,
         synopsis: formData.synopsis,
         runtime: formData.runtime,
+        trailerUrl: formData.trailerUrl,
         status: formData.status,
         img: imageUrl,
         showtimes: formData.status === 'now_showing' ? showtimes.filter(s => s.date && s.times.some(t => t)) : []
@@ -201,6 +204,11 @@ export function MovieForm({ initialData, onSaved }: MovieFormProps) {
             <div>
               <label className="block text-sm font-medium text-white/60 mb-2">Synopsis</label>
               <textarea required value={formData.synopsis} onChange={e => setFormData({...formData, synopsis: e.target.value})} rows={4} className="w-full bg-[#1A1A1A] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#DDBD68] transition-colors resize-none" placeholder="Brief description..."></textarea>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-white/60 mb-2">Trailer URL (YouTube)</label>
+              <input type="url" value={formData.trailerUrl} onChange={e => setFormData({...formData, trailerUrl: e.target.value})} className="w-full bg-[#1A1A1A] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#DDBD68] transition-colors" placeholder="e.g. https://www.youtube.com/watch?v=..." />
             </div>
           </div>
 

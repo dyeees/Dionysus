@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { ApiMovie as Movie, ShowtimeDate } from '../api';
 
 interface MovieDetailsProps {
@@ -12,6 +14,12 @@ function formatTime(time24: string) {
   hour = hour % 12;
   if (hour === 0) hour = 12;
   return `${hour.toString().padStart(2, '0')}:${minStr} ${ampm}`;
+}
+
+function getEmbedUrl(url: string) {
+  if (!url) return '';
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+  return match ? `https://www.youtube.com/embed/${match[1]}?autoplay=1` : url;
 }
 
 const MetaLabel = ({ children }: { children: React.ReactNode }) => (
@@ -30,6 +38,7 @@ const MetaValue = ({ children }: { children: React.ReactNode }) => (
 );
 
 export function MovieDetails({ movie, onTimeSelect }: MovieDetailsProps) {
+  const [showTrailer, setShowTrailer] = useState(false);
   const hasShowtimes = movie.showtimes && movie.showtimes.length > 0;
 
   return (
@@ -78,6 +87,18 @@ export function MovieDetails({ movie, onTimeSelect }: MovieDetailsProps) {
                 </div>
               )}
             </div>
+
+            {movie.trailerUrl && (
+              <button 
+                onClick={() => setShowTrailer(true)}
+                className="mt-3 flex items-center gap-2 bg-[#DDBD68]/10 hover:bg-[#DDBD68]/20 border border-[#DDBD68]/30 hover:border-[#DDBD68]/60 text-[#DDBD68] px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-all duration-300 cursor-pointer w-max"
+              >
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+                Watch Trailer
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -186,6 +207,35 @@ export function MovieDetails({ movie, onTimeSelect }: MovieDetailsProps) {
           </div>
         )}
       </div>
+
+      {/* ── Trailer Modal ───────────────────────────────── */}
+      {showTrailer && movie.trailerUrl && createPortal(
+        <div 
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-10 bg-transparent animate-fade-up"
+          onClick={() => setShowTrailer(false)}
+        >
+          <div 
+            className="relative w-full max-w-6xl bg-black rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(221,189,104,0.15)] ring-1 ring-white/10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              onClick={() => setShowTrailer(false)}
+              className="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-[#DDBD68] text-white hover:text-black rounded-full transition-colors cursor-pointer"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div className="aspect-video w-full">
+              <iframe 
+                src={getEmbedUrl(movie.trailerUrl)} 
+                className="w-full h-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowFullScreen
+              ></iframe>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

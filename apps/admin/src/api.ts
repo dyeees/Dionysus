@@ -15,6 +15,7 @@ export interface ApiMovie {
   cast?: string;
   synopsis?: string;
   runtime?: string;
+  trailerUrl?: string;
   status?: 'now_showing' | 'coming_soon';
 }
 

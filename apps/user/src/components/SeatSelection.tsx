@@ -38,20 +38,7 @@ function formatTime(time24: string) {
 }
 
 function getOccupied(movieId: string, time: string): Set<string> {
-  const totalCols = COL_GROUPS.reduce((a, b) => a + b, 0);
-  let movieIdHash = 0;
-  for (let i = 0; i < movieId.length; i++) {
-    movieIdHash = (movieIdHash * 31 + movieId.charCodeAt(i)) >>> 0;
-  }
-  let val = (movieIdHash * 397 + (time.charCodeAt(0) || 0) * 17 + (time.charCodeAt(3) || 0) * 31 + 12345) >>> 0;
-  const occupied = new Set<string>();
-  for (const { row } of ROWS) {
-    for (let c = 1; c <= totalCols; c++) {
-      val = ((val * 1664525 + 1013904223) >>> 0);
-      if ((val % 100) < 42) occupied.add(`${row}${c}`);
-    }
-  }
-  return occupied;
+  return new Set<string>();
 }
 
 // ── Shared input field ────────────────────────────────

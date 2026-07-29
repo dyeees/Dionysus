@@ -1,4 +1,6 @@
 import { useState, useEffect, Fragment } from 'react';
+import { auth } from '../firebase';
+import { createPaymentQR, checkPaymentStatus, createBooking, fetchOccupiedSeats } from '../api';
 import type { ApiMovie as Movie, ShowtimeDate } from '../api';
 
 interface SeatSelectionProps {
@@ -75,17 +77,13 @@ function BookingQR({ value }: { value: string }) {
 }
 
 export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionProps) {
-  const occupied = new Set(getOccupied(movie.id, time));
+  const [occupied, setOccupied] = useState<Set<string>>(new Set());
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [view, setView] = useState<View>('seats');
 
   // Payment state
-  const [payMethod, setPayMethod] = useState<PayMethod>('card');
-  const [cardNum, setCardNum]     = useState('');
-  const [cardName, setCardName]   = useState('');
-  const [expiry, setExpiry]       = useState('');
-  const [cvv, setCvv]             = useState('');
-  const [phone, setPhone]         = useState('');
+  const [qrString, setQrString] = useState<string>('');
+  const [isQrLoading, setIsQrLoading] = useState(false);
 
   // Booking reference — generated once per session
   const [bookingRef] = useState(() => `BK-${Math.random().toString(36).slice(2, 6).toUpperCase()}`);
@@ -94,6 +92,13 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
   const dateLabel = dateObj.isToday
     ? `TODAY · ${todayDayName}`
     : `${dateObj.month} ${dateObj.day} · ${dateObj.dayOfWeek}`;
+
+  // Fetch real occupied seats from the database
+  useEffect(() => {
+    fetchOccupiedSeats(movie.id, dateLabel, formatTime(time))
+      .then(seats => setOccupied(new Set(seats)))
+      .catch(console.error);
+  }, [movie.id, dateLabel, time]);
 
   const totalSeats = selected.size;
 
@@ -111,10 +116,49 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  const goToPayment = () => {
+  const goToPayment = async () => {
     window.history.pushState({ payment: true }, '', '#payment');
     setView('payment');
+    if (!qrString) {
+      setIsQrLoading(true);
+      try {
+        const amount = totalSeats * 350; // Fixed seat price for now
+        const data = await createPaymentQR(bookingRef, amount);
+        if (data.qr_string) setQrString(data.qr_string);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setIsQrLoading(false);
+      }
+    }
   };
+
+  // Poll for payment success
+  useEffect(() => {
+    if (view === 'payment' && qrString) {
+      const interval = setInterval(async () => {
+        try {
+          const res = await checkPaymentStatus(bookingRef);
+          if (res.status === 'PAID') {
+            clearInterval(interval);
+            // Record in Firebase Database
+            await createBooking({
+              reference: bookingRef,
+              user_email: auth.currentUser?.email || 'guest',
+              movie: { id: movie.id, title: movie.title, img: movie.img },
+              showtime: { date: dateLabel, time: formatTime(time), hall: 'Cinema 1' },
+              seats: [...selected].map(id => ({ id, row: id[0], number: parseInt(id.slice(1)) })),
+              status: 'confirmed',
+              total_amount: totalSeats * 350,
+              payment_method: 'Xendit QR',
+            });
+            setView('confirmed');
+          }
+        } catch (e) {}
+      }, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [view, qrString, bookingRef, movie, dateLabel, time, selected, totalSeats]);
 
   const toggleSeat = (id: string) => {
     if (occupied.has(id)) return;
@@ -126,20 +170,6 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
     });
   };
 
-  const handleCardNum = (v: string) => {
-    const digits = v.replace(/\D/g, '').slice(0, 16);
-    setCardNum(digits.replace(/(.{4})/g, '$1 ').trim());
-  };
-  const handleExpiry = (v: string) => {
-    const digits = v.replace(/\D/g, '').slice(0, 4);
-    setExpiry(digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits);
-  };
-
-  const payValid = (() => {
-    if (payMethod === 'card') return cardNum.replace(/\s/g, '').length === 16 && cardName.trim() && expiry.length === 5 && cvv.length >= 3;
-    return phone.replace(/\D/g, '').length >= 10; // gcash / maya
-  })();
-
   // QR payload — encodes all booking info so scanner can display without a DB
   const qrPayload = JSON.stringify({
     ref: 'DIONYSUS',
@@ -148,7 +178,7 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
     date: dateLabel,
     time: formatTime(time),
     seats: [...selected].sort().join(', '),
-    method: payMethod === 'card' ? 'Card' : payMethod === 'gcash' ? 'GCash' : 'Maya',
+    method: 'Xendit QR',
   });
 
   // ────────────────────────────────────────────────────────
@@ -236,6 +266,12 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
 
         {/* Header */}
         <div>
+          <button 
+            onClick={() => setView('seats')}
+            className="flex items-center gap-2 text-[#DDBD68]/60 hover:text-[#DDBD68] text-[10px] tracking-widest uppercase font-semibold mb-4 transition-colors cursor-pointer"
+          >
+            ← Back to Seats
+          </button>
           <h2
             className="text-[#DDBD68] font-black tracking-wider leading-tight m-0"
             style={{ fontFamily: "'Cinzel', serif", fontSize: 'clamp(1rem, 2.2vw, 1.5rem)' }}
@@ -264,70 +300,34 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
           </div>
         </div>
 
-        {/* Payment method tabs */}
-        <div className="flex flex-col gap-3">
-          <p className="text-[#FCEEAA]/40 text-[9px] uppercase tracking-[0.25em]">Payment Method</p>
-          <div className="grid grid-cols-3 gap-2">
-            {PAY_METHODS.map(m => (
-              <button
-                key={m.id}
-                onClick={() => setPayMethod(m.id)}
-                className={`flex flex-col items-center gap-1 py-3 rounded-xl border text-xs font-semibold tracking-wide transition-all duration-200 cursor-pointer ${
-                  payMethod === m.id
-                    ? 'bg-[#DDBD68]/15 border-[#DDBD68]/50 text-[#DDBD68]'
-                    : 'bg-white/[0.03] border-white/[0.08] text-[#DDBD68]/40 hover:border-white/[0.15] hover:text-[#DDBD68]/70'
-                }`}
-              >
-                <span className="text-lg leading-none">{m.icon}</span>
-                <span className="text-[10px] tracking-widest uppercase">{m.label}</span>
-              </button>
-            ))}
+        {/* Payment QR */}
+        <div className="flex flex-col items-center gap-5 bg-white/[0.03] border border-white/[0.08] rounded-xl p-8">
+          <p className="text-[#FCEEAA]/40 text-[10px] uppercase tracking-[0.3em] font-semibold">Scan to Pay</p>
+          <div className="bg-white p-4 rounded-2xl shadow-[0_0_30px_rgba(221,189,104,0.15)] flex justify-center items-center" style={{ width: 192, height: 192 }}>
+            {isQrLoading ? (
+               <div className="w-8 h-8 rounded-full border-2 border-[#DDBD68] border-t-transparent animate-spin" />
+            ) : qrString ? (
+               <BookingQR value={qrString} />
+            ) : (
+               <div className="text-red-500 text-xs">Failed to load QR</div>
+            )}
           </div>
+          <p className="text-[#DDBD68]/50 text-xs tracking-wider text-center max-w-[240px] leading-relaxed">
+            Scan this QR code with any supported e-wallet or banking app to complete your booking.
+          </p>
         </div>
 
-        {/* Dynamic form */}
-        <div className="flex flex-col gap-4">
-          {payMethod === 'card' && (
-            <>
-              <Field label="Card Number" placeholder="1234 5678 9012 3456" value={cardNum} onChange={handleCardNum} maxLength={19} />
-              <Field label="Name on Card" placeholder="Juan dela Cruz" value={cardName} onChange={setCardName} />
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Expiry" placeholder="MM/YY" value={expiry} onChange={handleExpiry} maxLength={5} />
-                <Field label="CVV" placeholder="•••" value={cvv} onChange={v => setCvv(v.replace(/\D/g, '').slice(0, 4))} type="password" maxLength={4} />
-              </div>
-            </>
-          )}
-          {(payMethod === 'gcash' || payMethod === 'maya') && (
-            <>
-              <Field
-                label={`${payMethod === 'gcash' ? 'GCash' : 'Maya'} Mobile Number`}
-                placeholder="09XX XXX XXXX"
-                value={phone}
-                onChange={setPhone}
-                type="tel"
-                maxLength={13}
-              />
-              <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-3 text-xs text-[#DDBD68]/45 leading-relaxed">
-                A payment request will be sent to your{' '}
-                <span className="text-[#DDBD68]/70">{payMethod === 'gcash' ? 'GCash' : 'Maya'}</span>{' '}
-                account. Open the app to approve within 5 minutes.
-              </div>
-            </>
-          )}
+        {/* Polling Indicator */}
+        <div className="flex flex-col items-center justify-center gap-3 mt-4">
+          <div className="flex gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#DDBD68] animate-bounce" style={{ animationDelay: '0ms' }} />
+            <div className="w-1.5 h-1.5 rounded-full bg-[#DDBD68] animate-bounce" style={{ animationDelay: '150ms' }} />
+            <div className="w-1.5 h-1.5 rounded-full bg-[#DDBD68] animate-bounce" style={{ animationDelay: '300ms' }} />
+          </div>
+          <p className="text-[#DDBD68]/45 text-[10px] uppercase tracking-widest font-semibold">
+            Waiting for Payment Confirmation...
+          </p>
         </div>
-
-        {/* Confirm */}
-        <button
-          onClick={() => payValid && setView('confirmed')}
-          disabled={!payValid}
-          className={`w-full py-3.5 rounded-xl font-bold text-xs tracking-[0.18em] uppercase transition-all duration-300 ${
-            payValid
-              ? 'bg-gradient-to-r from-[#DDBD68] via-[#FCEEAA] to-[#DDBD68] text-[#0C0C0C] cursor-pointer hover:shadow-[0_0_24px_rgba(221,189,104,0.4)]'
-              : 'bg-white/[0.05] text-white/20 cursor-not-allowed'
-          }`}
-        >
-          Confirm Payment
-        </button>
       </div>
     );
   }

@@ -5,9 +5,11 @@ interface NavbarProps {
   setActiveTab: (tab: string) => void;
   tabs: string[];
   hideIndicator?: boolean;
+  onLoginClick?: () => void;
+  hideNavElements?: boolean;
 }
 
-export function Navbar({ activeTab, setActiveTab, tabs, hideIndicator }: NavbarProps) {
+export function Navbar({ activeTab, setActiveTab, tabs, hideIndicator, onLoginClick, hideNavElements }: NavbarProps) {
   const tabsRef = useRef<(HTMLButtonElement | null)[]>([])
   const [lineStyle, setLineStyle] = useState({ left: 0, width: 0 })
 
@@ -39,14 +41,22 @@ export function Navbar({ activeTab, setActiveTab, tabs, hideIndicator }: NavbarP
 
       {/* Logo */}
       <div
-        className="text-shimmer text-xl sm:text-2xl font-black tracking-[0.25em] uppercase relative z-10 select-none"
+        className="text-shimmer text-xl sm:text-2xl font-black tracking-[0.25em] uppercase relative z-10 select-none cursor-pointer"
         style={{ fontFamily: "'Cinzel', serif" }}
+        onClick={() => {
+          setActiveTab(tabs[0]);
+          if (onLoginClick) {
+             // Just navigating away from login, the App will handle state reset
+             window.history.pushState({}, '', '/');
+             window.dispatchEvent(new PopStateEvent('popstate'));
+          }
+        }}
       >
         Dionysus
       </div>
 
       {/* Tabs */}
-      <div className="relative flex gap-1 z-10 bg-white/[0.04] rounded-full px-1 py-1 border border-white/[0.07]">
+      <div className={`relative flex gap-1 z-10 bg-white/[0.04] rounded-full px-1 py-1 border border-white/[0.07] ${hideNavElements ? 'opacity-0 pointer-events-none' : ''}`}>
         {tabs.map((tab, i) => (
           <button
             key={tab}
@@ -72,7 +82,7 @@ export function Navbar({ activeTab, setActiveTab, tabs, hideIndicator }: NavbarP
       </div>
 
       {/* Right actions */}
-      <div className="flex items-center gap-3 relative z-10">
+      <div className={`flex items-center gap-3 relative z-10 ${hideNavElements ? 'opacity-0 pointer-events-none' : ''}`}>
         <button
           className="p-2 text-[#DDBD68]/50 hover:text-[#DDBD68] hover:bg-white/5 rounded-full transition-all duration-200 cursor-pointer"
           aria-label="Search"
@@ -82,6 +92,7 @@ export function Navbar({ activeTab, setActiveTab, tabs, hideIndicator }: NavbarP
           </svg>
         </button>
         <button
+          onClick={onLoginClick}
           className="relative overflow-hidden border border-[#DDBD68]/40 text-[#DDBD68] hover:text-[#0C0C0C] px-5 py-1.5 rounded-full font-semibold uppercase tracking-widest text-xs transition-all duration-300 cursor-pointer group"
         >
           <span className="relative z-10 transition-colors duration-300">Login</span>

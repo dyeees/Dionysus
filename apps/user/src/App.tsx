@@ -3,6 +3,7 @@ import { Navbar } from './components/Navbar'
 import { MovieGrid } from './components/MovieGrid'
 import { MovieDetails } from './components/MovieDetails'
 import { SeatSelection } from './components/SeatSelection'
+import { Login } from './components/Login'
 import { fetchMovies, fetchComingSoon, type ApiMovie as Movie, type ShowtimeDate } from './api'
 import './App.css'
 
@@ -17,6 +18,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('NOW SHOWING')
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null)
   const [bookingInfo, setBookingInfo] = useState<BookingInfo | null>(null)
+  const [isLoginVisible, setIsLoginVisible] = useState(() => window.location.hash === '#login')
   
   const [nowShowing, setNowShowing] = useState<Movie[]>([])
   const [comingSoon, setComingSoon] = useState<Movie[]>([])
@@ -40,24 +42,31 @@ function App() {
     loadData()
   }, [])
 
-  // View derivation: 'grid' | 'details' | 'seats'
-  const view = !selectedMovie ? 'grid' : !bookingInfo ? 'details' : 'seats'
+  // View derivation: 'login' | 'grid' | 'details' | 'seats'
+  const view = isLoginVisible ? 'login' : !selectedMovie ? 'grid' : !bookingInfo ? 'details' : 'seats'
 
   useEffect(() => {
     const handlePopState = (e: PopStateEvent) => {
       const state = e.state || {}
-      if (state.payment) {
+      if (state.login || window.location.hash === '#login') {
+        setIsLoginVisible(true)
+      } else if (state.payment) {
         // handled by SeatSelection
       } else if (state.seats) {
         // handled by SeatSelection
       } else if (state.movieId) {
         setBookingInfo(null)
+        setIsLoginVisible(false)
       } else {
         setBookingInfo(null)
         setSelectedMovie(null)
+        setIsLoginVisible(false)
       }
     }
     window.addEventListener('popstate', handlePopState)
+    if (window.location.hash === '#login') {
+      setIsLoginVisible(true)
+    }
     return () => window.removeEventListener('popstate', handlePopState)
   }, [])
 
@@ -65,6 +74,19 @@ function App() {
     window.history.pushState({ movieId: movie.id }, '', `#${movie.id}`)
     setSelectedMovie(movie)
     setBookingInfo(null)
+    setIsLoginVisible(false)
+  }
+
+  const handleLoginClick = () => {
+    window.history.pushState({ login: true }, '', '#login')
+    setIsLoginVisible(true)
+    setSelectedMovie(null)
+    setBookingInfo(null)
+  }
+
+  const handleBackFromLogin = () => {
+    window.history.pushState({}, '', '/')
+    setIsLoginVisible(false)
   }
 
   const handleTimeSelect = (dateObj: ShowtimeDate, time: string) => {
@@ -87,9 +109,12 @@ function App() {
           setActiveTab(tab)
           setSelectedMovie(null)
           setBookingInfo(null)
+          setIsLoginVisible(false)
         }}
         tabs={TABS}
-        hideIndicator={!!selectedMovie}
+        hideIndicator={!!selectedMovie || isLoginVisible}
+        onLoginClick={handleLoginClick}
+        hideNavElements={isLoginVisible}
       />
 
       {/* Main Content Area */}
@@ -129,6 +154,10 @@ function App() {
             time={bookingInfo.time}
             onBack={handleBackFromSeats}
           />
+        )}
+
+        {view === 'login' && (
+          <Login onBack={handleBackFromLogin} />
         )}
       </main>
     </div>

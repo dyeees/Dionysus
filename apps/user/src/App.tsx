@@ -3,7 +3,8 @@ import { Navbar } from './components/Navbar'
 import { MovieGrid } from './components/MovieGrid'
 import { MovieDetails } from './components/MovieDetails'
 import { SeatSelection } from './components/SeatSelection'
-import { Login } from './components/Login'
+import { Login } from './components/auth/Login'
+import { Signup } from './components/auth/Signup'
 import { fetchMovies, fetchComingSoon, type ApiMovie as Movie, type ShowtimeDate } from './api'
 import './App.css'
 
@@ -18,7 +19,11 @@ function App() {
   const [activeTab, setActiveTab] = useState('NOW SHOWING')
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null)
   const [bookingInfo, setBookingInfo] = useState<BookingInfo | null>(null)
-  const [isLoginVisible, setIsLoginVisible] = useState(() => window.location.hash === '#login')
+  const [authView, setAuthView] = useState<'none' | 'login' | 'signup'>(() => {
+    if (window.location.hash === '#login') return 'login'
+    if (window.location.hash === '#signup') return 'signup'
+    return 'none'
+  })
   
   const [nowShowing, setNowShowing] = useState<Movie[]>([])
   const [comingSoon, setComingSoon] = useState<Movie[]>([])
@@ -42,30 +47,34 @@ function App() {
     loadData()
   }, [])
 
-  // View derivation: 'login' | 'grid' | 'details' | 'seats'
-  const view = isLoginVisible ? 'login' : !selectedMovie ? 'grid' : !bookingInfo ? 'details' : 'seats'
+  // View derivation: 'auth' | 'grid' | 'details' | 'seats'
+  const view = authView !== 'none' ? 'auth' : !selectedMovie ? 'grid' : !bookingInfo ? 'details' : 'seats'
 
   useEffect(() => {
     const handlePopState = (e: PopStateEvent) => {
       const state = e.state || {}
       if (state.login || window.location.hash === '#login') {
-        setIsLoginVisible(true)
+        setAuthView('login')
+      } else if (state.signup || window.location.hash === '#signup') {
+        setAuthView('signup')
       } else if (state.payment) {
         // handled by SeatSelection
       } else if (state.seats) {
         // handled by SeatSelection
       } else if (state.movieId) {
         setBookingInfo(null)
-        setIsLoginVisible(false)
+        setAuthView('none')
       } else {
         setBookingInfo(null)
         setSelectedMovie(null)
-        setIsLoginVisible(false)
+        setAuthView('none')
       }
     }
     window.addEventListener('popstate', handlePopState)
     if (window.location.hash === '#login') {
-      setIsLoginVisible(true)
+      setAuthView('login')
+    } else if (window.location.hash === '#signup') {
+      setAuthView('signup')
     }
     return () => window.removeEventListener('popstate', handlePopState)
   }, [])
@@ -74,19 +83,26 @@ function App() {
     window.history.pushState({ movieId: movie.id }, '', `#${movie.id}`)
     setSelectedMovie(movie)
     setBookingInfo(null)
-    setIsLoginVisible(false)
+    setAuthView('none')
   }
 
   const handleLoginClick = () => {
     window.history.pushState({ login: true }, '', '#login')
-    setIsLoginVisible(true)
+    setAuthView('login')
     setSelectedMovie(null)
     setBookingInfo(null)
   }
 
-  const handleBackFromLogin = () => {
+  const handleSignupClick = () => {
+    window.history.pushState({ signup: true }, '', '#signup')
+    setAuthView('signup')
+    setSelectedMovie(null)
+    setBookingInfo(null)
+  }
+
+  const handleBackFromAuth = () => {
     window.history.pushState({}, '', '/')
-    setIsLoginVisible(false)
+    setAuthView('none')
   }
 
   const handleTimeSelect = (dateObj: ShowtimeDate, time: string) => {
@@ -109,12 +125,12 @@ function App() {
           setActiveTab(tab)
           setSelectedMovie(null)
           setBookingInfo(null)
-          setIsLoginVisible(false)
+          setAuthView('none')
         }}
         tabs={TABS}
-        hideIndicator={!!selectedMovie || isLoginVisible}
+        hideIndicator={!!selectedMovie || authView !== 'none'}
         onLoginClick={handleLoginClick}
-        hideNavElements={isLoginVisible}
+        hideNavElements={authView !== 'none'}
       />
 
       {/* Main Content Area */}
@@ -156,8 +172,12 @@ function App() {
           />
         )}
 
-        {view === 'login' && (
-          <Login onBack={handleBackFromLogin} />
+        {view === 'auth' && authView === 'login' && (
+          <Login onBack={handleBackFromAuth} onNavigateToSignup={handleSignupClick} />
+        )}
+
+        {view === 'auth' && authView === 'signup' && (
+          <Signup onBack={handleBackFromAuth} onNavigateToLogin={handleLoginClick} />
         )}
       </main>
     </div>

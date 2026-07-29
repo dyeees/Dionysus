@@ -45,7 +45,7 @@ export function Navbar({ activeTab, setActiveTab, tabs, hideIndicator, onLoginCl
   }, [activeTab, tabs])
 
   return (
-    <nav className="relative flex items-center justify-between px-8 sm:px-12 lg:px-20 py-4 bg-[#0A0A0A]/95 backdrop-blur-md border-b border-white/5">
+    <nav className="relative flex flex-wrap md:flex-nowrap items-center justify-between px-4 sm:px-8 md:px-12 lg:px-20 py-3 md:py-4 gap-y-4 bg-[#0A0A0A]/95 backdrop-blur-md border-b border-white/5">
       {/* Fading gold border bottom */}
       <div
         className="absolute bottom-0 left-0 right-0 h-[1px] pointer-events-none"
@@ -56,7 +56,7 @@ export function Navbar({ activeTab, setActiveTab, tabs, hideIndicator, onLoginCl
 
       {/* Logo */}
       <div
-        className="text-shimmer text-xl sm:text-2xl font-black tracking-[0.25em] uppercase relative z-10 select-none cursor-pointer"
+        className="text-shimmer text-xl sm:text-2xl font-black tracking-[0.25em] uppercase relative z-10 select-none cursor-pointer order-1"
         style={{ fontFamily: "'Cinzel', serif" }}
         onClick={() => {
           setActiveTab(tabs[0]);
@@ -71,7 +71,8 @@ export function Navbar({ activeTab, setActiveTab, tabs, hideIndicator, onLoginCl
       </div>
 
       {/* Tabs */}
-      <div className={`relative flex gap-1 z-10 bg-white/[0.04] rounded-full px-1 py-1 border border-white/[0.07] ${hideNavElements ? 'opacity-0 pointer-events-none' : ''}`}>
+      <div className={`order-3 md:order-none w-full md:w-auto relative md:absolute md:left-1/2 md:-translate-x-1/2 flex justify-center mt-2 md:mt-0 ${hideNavElements ? 'opacity-0 pointer-events-none' : ''}`}>
+        <div className="relative flex gap-1 z-10 bg-white/[0.04] rounded-full px-1 py-1 border border-white/[0.07]">
         {tabs.map((tab, i) => (
           <button
             key={tab}
@@ -94,18 +95,11 @@ export function Navbar({ activeTab, setActiveTab, tabs, hideIndicator, onLoginCl
             style={{ left: `${lineStyle.left}px`, width: `${lineStyle.width}px` }}
           />
         )}
+        </div>
       </div>
 
       {/* Right actions */}
-      <div className={`flex items-center gap-3 relative z-10 ${hideNavElements ? 'opacity-0 pointer-events-none' : ''}`}>
-        <button
-          className="p-2 text-[#DDBD68]/50 hover:text-[#DDBD68] hover:bg-white/5 rounded-full transition-all duration-200 cursor-pointer"
-          aria-label="Search"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </button>
+      <div className={`flex items-center gap-2 sm:gap-3 relative z-10 order-2 md:order-3 ${hideNavElements ? 'opacity-0 pointer-events-none' : ''}`}>
         {currentUser ? (
           <div className="relative" ref={dropdownRef}>
             <div 

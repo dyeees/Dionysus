@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import type { ApiMovie as Movie, ShowtimeDate } from '../api';
 
 interface SeatSelectionProps {
@@ -355,7 +355,7 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
           onClick={() => toggleSeat(id)}
           disabled={isOccupied}
           title={isOccupied ? 'Occupied' : `${row}${col}`}
-          className={`w-6 h-[18px] rounded-t-[5px] rounded-b-[2px] transition-transform duration-150 ${cls} ${isSelected ? 'scale-110' : ''}`}
+          className={`w-5 h-[15px] sm:w-6 sm:h-[18px] rounded-t-[4px] sm:rounded-t-[5px] rounded-b-[2px] transition-transform duration-150 ${cls} ${isSelected ? 'scale-110' : ''}`}
         />
       );
     };
@@ -368,19 +368,19 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
     });
 
     return (
-      <div key={row} className="flex items-center gap-2 w-full justify-center">
-        <span className="w-4 shrink-0 text-center text-[9px] font-bold text-[#DDBD68]/30">{row}</span>
+      <div key={row} className="flex items-center gap-1.5 sm:gap-2">
+        <span className="w-3 sm:w-4 shrink-0 text-center text-[9px] font-bold text-[#DDBD68]/30">{row}</span>
         {groups.map(({ start, count }, gi) => (
-          <>
-            {gi > 0 && <div key={`aisle-${gi}`} className="w-5 shrink-0" />}
-            <div key={`group-${gi}`} className="flex gap-[3px]">
+          <Fragment key={`group-wrap-${gi}`}>
+            {gi > 0 && <div className="w-3 sm:w-5 shrink-0" />}
+            <div className="flex gap-[2px] sm:gap-[3px]">
               {Array.from({ length: count }, (_, i) => (
                 <SeatBtn key={start + i} col={start + i} />
               ))}
             </div>
-          </>
+          </Fragment>
         ))}
-        <span className="w-4 shrink-0 text-center text-[9px] font-bold text-[#DDBD68]/30">{row}</span>
+        <span className="w-3 sm:w-4 shrink-0 text-center text-[9px] font-bold text-[#DDBD68]/30">{row}</span>
       </div>
     );
   };
@@ -414,10 +414,12 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
       </div>
 
       {/* Seat Map */}
-      <div className="flex flex-col gap-1.5 overflow-x-auto pb-1">
-        {ROWS.map((rowInfo) => (
-          <div key={rowInfo.row}>{renderRow(rowInfo)}</div>
-        ))}
+      <div className="w-full flex overflow-x-auto pb-4">
+        <div className="m-auto flex flex-col gap-1.5 min-w-max px-4">
+          {ROWS.map((rowInfo) => (
+            <div key={rowInfo.row}>{renderRow(rowInfo)}</div>
+          ))}
+        </div>
       </div>
 
       {/* Legend */}

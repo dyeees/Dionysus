@@ -211,26 +211,38 @@ export function MovieDetails({ movie, onTimeSelect }: MovieDetailsProps) {
       {/* ── Trailer Modal ───────────────────────────────── */}
       {showTrailer && movie.trailerUrl && createPortal(
         <div 
-          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-10 bg-transparent animate-fade-up"
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-12 bg-black animate-fade-up"
           onClick={() => setShowTrailer(false)}
         >
-          <div 
-            className="relative w-full max-w-6xl bg-black rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(221,189,104,0.15)] ring-1 ring-white/10"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button 
-              onClick={() => setShowTrailer(false)}
-              className="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-[#DDBD68] text-white hover:text-black rounded-full transition-colors cursor-pointer"
+          <div className="relative w-full max-w-6xl">
+            {/* Modal Header (Floating above the video so the video stays perfectly centered) */}
+            <div className="absolute -top-10 left-0 right-0 flex items-center justify-between px-2">
+              <h3 className="text-[#DDBD68] font-serif font-bold tracking-[0.2em] uppercase text-xs sm:text-sm">
+                Official Trailer
+              </h3>
+              <button 
+                onClick={() => setShowTrailer(false)}
+                className="p-1.5 text-white/50 hover:text-black hover:bg-[#DDBD68] rounded-full transition-colors cursor-pointer"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            
+            {/* Video Container */}
+            <div 
+              className="w-full bg-black rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(221,189,104,0.15)] ring-1 ring-white/10"
+              onClick={(e) => e.stopPropagation()}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-            <div className="aspect-video w-full">
-              <iframe 
-                src={getEmbedUrl(movie.trailerUrl)} 
-                className="w-full h-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowFullScreen
-              ></iframe>
+              <div className="aspect-video w-full bg-black">
+                <iframe 
+                  src={getEmbedUrl(movie.trailerUrl)} 
+                  className="w-full h-full border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                  allowFullScreen
+                ></iframe>
+              </div>
             </div>
           </div>
         </div>,

@@ -3,6 +3,7 @@ import { Navbar } from './components/Navbar'
 import { MovieGrid } from './components/MovieGrid'
 import { MovieDetails } from './components/MovieDetails'
 import { SeatSelection } from './components/SeatSelection'
+import { MyTickets } from './components/MyTickets'
 import { Login } from './components/auth/Login'
 import { Signup } from './components/auth/Signup'
 import { auth } from './firebase'
@@ -22,7 +23,9 @@ function App() {
   const [activeTab, setActiveTab] = useState('NOW SHOWING')
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null)
   const [bookingInfo, setBookingInfo] = useState<BookingInfo | null>(null)
+  const [showProfile, setShowProfile] = useState(false)
   const [authView, setAuthView] = useState<'none' | 'login' | 'signup'>(() => {
+    if (window.location.hash === '#profile') return 'none'
     if (window.location.hash === '#login') return 'login'
     if (window.location.hash === '#signup') return 'signup'
     return 'none'
@@ -62,26 +65,33 @@ function App() {
     loadData()
   }, [])
 
-  // View derivation: 'auth' | 'grid' | 'details' | 'seats'
-  const view = authView !== 'none' ? 'auth' : !selectedMovie ? 'grid' : !bookingInfo ? 'details' : 'seats'
+  // View derivation: 'auth' | 'profile' | 'grid' | 'details' | 'seats'
+  const view = authView !== 'none' ? 'auth' : showProfile ? 'profile' : !selectedMovie ? 'grid' : !bookingInfo ? 'details' : 'seats'
 
   useEffect(() => {
     const handlePopState = (e: PopStateEvent) => {
       const state = e.state || {}
       if (state.login || window.location.hash === '#login') {
         setAuthView('login')
+        setShowProfile(false)
       } else if (state.signup || window.location.hash === '#signup') {
         setAuthView('signup')
+        setShowProfile(false)
+      } else if (state.profile || window.location.hash === '#profile') {
+        setShowProfile(true)
+        setAuthView('none')
       } else if (state.payment) {
         // handled by SeatSelection
       } else if (state.seats) {
         // handled by SeatSelection
       } else if (state.movieId) {
         setBookingInfo(null)
+        setShowProfile(false)
         setAuthView('none')
       } else {
         setBookingInfo(null)
         setSelectedMovie(null)
+        setShowProfile(false)
         setAuthView('none')
       }
     }
@@ -90,6 +100,8 @@ function App() {
       setAuthView('login')
     } else if (window.location.hash === '#signup') {
       setAuthView('signup')
+    } else if (window.location.hash === '#profile') {
+      setShowProfile(true)
     }
     return () => window.removeEventListener('popstate', handlePopState)
   }, [])
@@ -98,12 +110,22 @@ function App() {
     window.history.pushState({ movieId: movie.id }, '', `#${movie.id}`)
     setSelectedMovie(movie)
     setBookingInfo(null)
+    setShowProfile(false)
+    setAuthView('none')
+  }
+
+  const handleProfileClick = () => {
+    window.history.pushState({ profile: true }, '', '#profile')
+    setShowProfile(true)
+    setSelectedMovie(null)
+    setBookingInfo(null)
     setAuthView('none')
   }
 
   const handleLoginClick = () => {
     window.history.pushState({ login: true }, '', '#login')
     setAuthView('login')
+    setShowProfile(false)
     setSelectedMovie(null)
     setBookingInfo(null)
   }
@@ -111,6 +133,7 @@ function App() {
   const handleSignupClick = () => {
     window.history.pushState({ signup: true }, '', '#signup')
     setAuthView('signup')
+    setShowProfile(false)
     setSelectedMovie(null)
     setBookingInfo(null)
   }
@@ -118,6 +141,7 @@ function App() {
   const handleBackFromAuth = () => {
     window.history.pushState({}, '', '/')
     setAuthView('none')
+    setShowProfile(false)
   }
 
   const handleTimeSelect = (dateObj: ShowtimeDate, time: string) => {
@@ -135,6 +159,8 @@ function App() {
     try {
       await signOut(auth)
       setAuthView('none')
+      setShowProfile(false)
+      window.history.pushState({}, '', '/')
     } catch (error) {
       console.error('Error logging out:', error)
     }
@@ -148,12 +174,14 @@ function App() {
           setActiveTab(tab)
           setSelectedMovie(null)
           setBookingInfo(null)
+          setShowProfile(false)
           setAuthView('none')
         }}
         tabs={TABS}
-        hideIndicator={!!selectedMovie || authView !== 'none'}
+        hideIndicator={!!selectedMovie || authView !== 'none' || showProfile}
         onLoginClick={handleLoginClick}
         onLogout={handleLogout}
+        onProfileClick={handleProfileClick}
         hideNavElements={authView !== 'none'}
         currentUser={currentUser}
       />
@@ -180,6 +208,8 @@ function App() {
             {activeTab === 'COMING SOON' && <MovieGrid movies={comingSoon} onMovieClick={handleMovieClick} />}
           </>
         )}
+
+        {view === 'profile' && <MyTickets />}
 
         {view === 'details' && selectedMovie && (
           <MovieDetails

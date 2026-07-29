@@ -12,7 +12,6 @@ interface SeatSelectionProps {
 
 type SeatType = 'standard' | 'regular' | 'premium';
 type View = 'seats' | 'payment' | 'confirmed';
-type PayMethod = 'card' | 'gcash' | 'maya';
 
 const ROWS: { row: string; type: SeatType }[] = [
   { row: 'A', type: 'standard' },
@@ -38,33 +37,6 @@ function formatTime(time24: string) {
   if (hour === 0) hour = 12;
   return `${hour.toString().padStart(2, '0')}:${minStr} ${ampm}`;
 }
-
-function getOccupied(movieId: string, time: string): Set<string> {
-  return new Set<string>();
-}
-
-// ── Shared input field ────────────────────────────────
-const Field = ({
-  label, placeholder, value, onChange, type = 'text', maxLength,
-}: {
-  label: string; placeholder: string; value: string;
-  onChange: (v: string) => void; type?: string; maxLength?: number;
-}) => (
-  <div className="flex flex-col gap-1.5">
-    <label className="text-[#FCEEAA]/45 text-[10px] uppercase tracking-[0.2em] font-semibold">
-      {label}
-    </label>
-    <input
-      type={type}
-      placeholder={placeholder}
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      maxLength={maxLength}
-      className="bg-white/[0.04] border border-white/[0.10] focus:border-[#DDBD68]/50 rounded-lg px-4 py-2.5 text-[#DDBD68] text-sm placeholder:text-white/20 outline-none transition-colors duration-200 w-full"
-      style={{ fontFamily: "'Inter', sans-serif" }}
-    />
-  </div>
-);
 
 // ── Lazy QR code component (only imported after payment) ──
 function BookingQR({ value }: { value: string }) {
@@ -255,11 +227,6 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
   // VIEW: PAYMENT
   // ────────────────────────────────────────────────────────
   if (view === 'payment') {
-    const PAY_METHODS: { id: PayMethod; label: string; icon: string }[] = [
-      { id: 'card',  label: 'Card',  icon: '💳' },
-      { id: 'gcash', label: 'GCash', icon: '📱' },
-      { id: 'maya',  label: 'Maya',  icon: '💜' },
-    ];
 
     return (
       <div className="flex flex-col gap-8 animate-fade-up max-w-lg mx-auto w-full">

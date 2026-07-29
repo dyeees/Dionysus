@@ -118,8 +118,19 @@ export function Signup({ onBack, onNavigateToLogin }: { onBack: () => void, onNa
     }
   };
 
+  const handleBack = async () => {
+    if (isVerifyingEmail && auth.currentUser && !auth.currentUser.emailVerified) {
+      try {
+        await deleteUser(auth.currentUser);
+      } catch (err) {
+        console.error('Failed to clean up user on back', err);
+      }
+    }
+    onBack();
+  };
+
   return (
-    <div className="flex flex-col items-center w-full max-w-sm mx-auto animate-fade-up py-10">
+    <div className="flex flex-col items-center w-full max-w-md mx-auto animate-fade-up py-10">
       <div className="text-center mb-8">
         <h2
           className="text-[#DDBD68] text-2xl sm:text-3xl font-black tracking-widest mb-2"
@@ -129,7 +140,12 @@ export function Signup({ onBack, onNavigateToLogin }: { onBack: () => void, onNa
         </h2>
         <p className="text-[#DDBD68]/55 text-xs tracking-[0.15em] uppercase px-4 leading-relaxed">
           {isVerifyingEmail 
-            ? 'A verification link has been sent to your email. Please click the link to verify your account.' 
+            ? (
+              <>
+                A verification link has been sent to your email.<br />
+                Please click the link to verify your account.
+              </>
+            )
             : 'Join Dionysus Cinema'}
         </p>
       </div>
@@ -223,27 +239,27 @@ export function Signup({ onBack, onNavigateToLogin }: { onBack: () => void, onNa
 
         {isVerifyingEmail && (
           <div className="flex flex-col items-center justify-center py-4 text-center">
-            <div className="relative mb-6">
+            <div className="relative mb-2">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-[#DDBD68] opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76" />
               </svg>
             </div>
             
-            <p className="text-[#FCEEAA]/70 text-sm tracking-wide mb-3">
+            <p className="text-[#DDBD68] text-[11px] font-bold uppercase tracking-[0.3em] mb-4 animate-pulse">
               Waiting for verification...
             </p>
 
-            <div className="bg-[#DDBD68]/10 border border-[#DDBD68]/20 rounded-lg px-6 py-2.5 inline-flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#DDBD68]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span className="text-[#DDBD68] font-mono font-bold text-lg tracking-widest">
+            <div className="mt-2 flex flex-col items-center">
+              <span 
+                className="text-lg font-bold tracking-widest text-[#DDBD68] select-none"
+                style={{ fontVariantNumeric: 'tabular-nums' }}
+              >
                 {Math.floor(timeLeft / 60).toString().padStart(2, '0')}:{(timeLeft % 60).toString().padStart(2, '0')}
               </span>
+              <p className="text-red-400/70 text-[10px] uppercase tracking-widest mt-2">
+                Link expires in 3 minutes
+              </p>
             </div>
-            <p className="text-red-400/60 text-[10px] uppercase tracking-widest mt-3">
-              Link expires in 3 minutes
-            </p>
           </div>
         )}
 
@@ -258,8 +274,8 @@ export function Signup({ onBack, onNavigateToLogin }: { onBack: () => void, onNa
         )}
       </form>
 
-      <div className="mt-8 text-center">
-        {!isVerifyingEmail && (
+      {!isVerifyingEmail && (
+        <div className="mt-8 text-center">
           <button
             type="button"
             onClick={onNavigateToLogin}
@@ -267,12 +283,12 @@ export function Signup({ onBack, onNavigateToLogin }: { onBack: () => void, onNa
           >
             Already have an account? Login
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       <button
-        onClick={onBack}
-        className="mt-6 border border-[#DDBD68]/35 text-[#DDBD68] hover:bg-[#DDBD68]/10 px-6 py-2 rounded-full text-[10px] tracking-widest uppercase font-semibold transition-all cursor-pointer"
+        onClick={handleBack}
+        className={`${isVerifyingEmail ? 'mt-8' : 'mt-6'} border border-[#DDBD68]/35 text-[#DDBD68] hover:bg-[#DDBD68]/10 px-6 py-2 rounded-full text-[10px] tracking-widest uppercase font-semibold transition-all cursor-pointer`}
       >
         Back to Home
       </button>

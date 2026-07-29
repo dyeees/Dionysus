@@ -5,6 +5,9 @@ import { MovieDetails } from './components/MovieDetails'
 import { SeatSelection } from './components/SeatSelection'
 import { Login } from './components/auth/Login'
 import { Signup } from './components/auth/Signup'
+import { auth } from './firebase'
+import { onAuthStateChanged, signOut } from 'firebase/auth'
+import type { User } from 'firebase/auth'
 import { fetchMovies, fetchComingSoon, type ApiMovie as Movie, type ShowtimeDate } from './api'
 import './App.css'
 
@@ -28,6 +31,18 @@ function App() {
   const [nowShowing, setNowShowing] = useState<Movie[]>([])
   const [comingSoon, setComingSoon] = useState<Movie[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user && user.emailVerified) {
+        setCurrentUser(user)
+      } else {
+        setCurrentUser(null)
+      }
+    })
+    return () => unsubscribe()
+  }, [])
 
   useEffect(() => {
     const loadData = async () => {
@@ -116,6 +131,14 @@ function App() {
     setSelectedMovie(null)
   }
 
+  const handleLogout = async () => {
+    try {
+      await signOut(auth)
+      setAuthView('none')
+    } catch (error) {
+      console.error('Error logging out:', error)
+    }
+  }
 
   return (
     <div className="min-h-screen text-[#DDBD68]">
@@ -130,7 +153,9 @@ function App() {
         tabs={TABS}
         hideIndicator={!!selectedMovie || authView !== 'none'}
         onLoginClick={handleLoginClick}
+        onLogout={handleLogout}
         hideNavElements={authView !== 'none'}
+        currentUser={currentUser}
       />
 
       {/* Main Content Area */}

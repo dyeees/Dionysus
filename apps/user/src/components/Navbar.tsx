@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import type { User } from 'firebase/auth'
 
 interface NavbarProps {
   activeTab: string;
@@ -6,12 +7,26 @@ interface NavbarProps {
   tabs: string[];
   hideIndicator?: boolean;
   onLoginClick?: () => void;
+  onLogout?: () => void;
   hideNavElements?: boolean;
+  currentUser?: User | null;
 }
 
-export function Navbar({ activeTab, setActiveTab, tabs, hideIndicator, onLoginClick, hideNavElements }: NavbarProps) {
+export function Navbar({ activeTab, setActiveTab, tabs, hideIndicator, onLoginClick, onLogout, hideNavElements, currentUser }: NavbarProps) {
   const tabsRef = useRef<(HTMLButtonElement | null)[]>([])
   const [lineStyle, setLineStyle] = useState({ left: 0, width: 0 })
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   useEffect(() => {
     const updateLine = () => {
@@ -91,13 +106,39 @@ export function Navbar({ activeTab, setActiveTab, tabs, hideIndicator, onLoginCl
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </button>
-        <button
-          onClick={onLoginClick}
-          className="relative overflow-hidden border border-[#DDBD68]/40 text-[#DDBD68] hover:text-[#0C0C0C] px-5 py-1.5 rounded-full font-semibold uppercase tracking-widest text-xs transition-all duration-300 cursor-pointer group"
-        >
-          <span className="relative z-10 transition-colors duration-300">Login</span>
-          <span className="absolute inset-0 bg-gradient-to-r from-[#DDBD68] via-[#FCEEAA] to-[#DDBD68] translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-        </button>
+        {currentUser ? (
+          <div className="relative" ref={dropdownRef}>
+            <div 
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#DDBD68] to-[#FCEEAA] text-[#0C0C0C] flex items-center justify-center font-bold text-sm uppercase shadow-[0_0_15px_rgba(221,189,104,0.3)] select-none cursor-pointer hover:scale-105 transition-transform"
+              title={currentUser.displayName || currentUser.email || ''}
+            >
+              {currentUser.displayName ? currentUser.displayName.charAt(0) : currentUser.email?.charAt(0)}
+            </div>
+            
+            {isDropdownOpen && (
+              <div className="absolute right-0 mt-4 w-36 bg-[#0C0C0C]/95 backdrop-blur-xl border border-white/[0.08] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] overflow-hidden py-1 z-50">
+                <button
+                  onClick={() => {
+                    setIsDropdownOpen(false)
+                    onLogout?.()
+                  }}
+                  className="w-full text-left px-5 py-3 text-xs tracking-widest uppercase text-red-400 hover:bg-white/[0.06] transition-colors cursor-pointer font-semibold"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <button
+            onClick={onLoginClick}
+            className="relative overflow-hidden border border-[#DDBD68]/40 text-[#DDBD68] hover:text-[#0C0C0C] px-5 py-1.5 rounded-full font-semibold uppercase tracking-widest text-xs transition-all duration-300 cursor-pointer group"
+          >
+            <span className="relative z-10 transition-colors duration-300">Login</span>
+            <span className="absolute inset-0 bg-gradient-to-r from-[#DDBD68] via-[#FCEEAA] to-[#DDBD68] translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+          </button>
+        )}
       </div>
     </nav>
   )

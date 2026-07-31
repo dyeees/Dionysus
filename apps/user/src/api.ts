@@ -232,7 +232,13 @@ export const createPaymentQR = async (referenceId: string, amount: number) => {
     body: JSON.stringify({ reference_id: referenceId, amount })
   });
   if (!response.ok) {
-    throw new Error('Failed to create payment QR');
+    let errText = 'Failed to create payment QR';
+    try {
+      const errData = await response.json();
+      console.error('Backend QR Error:', errData);
+      errText = errData.error || errText;
+    } catch(e) {}
+    throw new Error(errText);
   }
   return response.json();
 };

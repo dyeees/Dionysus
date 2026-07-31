@@ -6,6 +6,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Catch JSON syntax errors
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    console.error('Bad JSON received:', err.message);
+    return res.status(400).send({ error: 'Bad JSON format in request' });
+  }
+  next();
+});
+
 // Root health check route
 app.get('/', (req, res) => {
   res.send('Dionysus Backend API is running!');

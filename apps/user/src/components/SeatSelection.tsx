@@ -1,6 +1,6 @@
 import { useState, useEffect, Fragment } from 'react';
 import { auth } from '../firebase';
-import { createPaymentQR, checkPaymentStatus, createBooking, fetchOccupiedSeats } from '../api';
+import { createPaymentQR, checkPaymentStatus, createBooking, fetchOccupiedSeats, generateCustomRef } from '../api';
 import type { ApiMovie as Movie, ShowtimeDate } from '../api';
 import { Ticket } from './Ticket';
 
@@ -58,8 +58,8 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
   const [qrString, setQrString] = useState<string>('');
   const [isQrLoading, setIsQrLoading] = useState(false);
 
-  // Booking reference — generated once per session
-  const [bookingRef] = useState(() => `BK-${Math.random().toString(36).slice(2, 6).toUpperCase()}`);
+  // Booking ID — generated once per session
+  const [bookingId] = useState(() => `BK-${Math.random().toString(36).slice(2, 6).toUpperCase()}`);
 
   const todayDayName = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][new Date().getDay()];
   const dateLabel = dateObj.isToday
@@ -95,7 +95,7 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
       setIsQrLoading(true);
       try {
         const amount = totalSeats * 350; // Fixed seat price for now
-        const data = await createPaymentQR(bookingRef, amount);
+        const data = await createPaymentQR(bookingId, amount);
         if (data.qr_string) setQrString(data.qr_string);
       } catch (e) {
         console.error(e);
@@ -110,27 +110,27 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
     if (view === 'payment' && qrString) {
       const interval = setInterval(async () => {
         try {
-          const res = await checkPaymentStatus(bookingRef);
+          const res = await checkPaymentStatus(bookingId);
           if (res.status === 'PAID') {
             clearInterval(interval);
             // Record in Firebase Database
+            const seatsArray = [...selected].map(id => ({ id, row: id[0], number: parseInt(id.slice(1)), type: 'standard' as const, price: 350, is_occupied: true }));
             await createBooking({
-              reference: bookingRef,
+              booking_id: bookingId,
               user_email: auth.currentUser?.email || 'guest',
               movie: { id: movie.id, title: movie.title, img: movie.img },
               showtime: { date: dateLabel, time: formatTime(time), hall: 'Cinema 1' },
-              seats: [...selected].map(id => ({ id, row: id[0], number: parseInt(id.slice(1)) })),
               status: 'confirmed',
               total_amount: totalSeats * 350,
               payment_method: 'Xendit QR',
-            });
+            }, seatsArray);
             setView('confirmed');
           }
         } catch (e) {}
       }, 3000);
       return () => clearInterval(interval);
     }
-  }, [view, qrString, bookingRef, movie, dateLabel, time, selected, totalSeats]);
+  }, [view, qrString, bookingId, movie, dateLabel, time, selected, totalSeats]);
 
   const toggleSeat = (id: string) => {
     if (occupied.has(id)) return;
@@ -191,7 +191,7 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
               movie={{ title: movie.title, img: movie.img }}
               showtime={{ date: dateLabel, time: formatTime(time) }}
               seatId={seatId}
-              reference={bookingRef}
+              reference={generateCustomRef(dateLabel, seatId)}
             />
           ))}
         </div>

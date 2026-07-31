@@ -23,6 +23,7 @@ const TicketQR = ({ value }: { value: string }) => {
 };
 
 export function Ticket({ movie, showtime, seatId, reference }: TicketProps) {
+
   return (
     <div onClick={(e) => e.stopPropagation()} className="flex w-full h-[220px] sm:h-[280px] relative text-white text-left drop-shadow-[0_20px_40px_rgba(221,189,104,0.15)] filter cursor-default">
       {/* Main Ticket Body (Left + Middle) */}
@@ -121,10 +122,10 @@ export function Ticket({ movie, showtime, seatId, reference }: TicketProps) {
         }} />
 
         <div className="bg-white p-1.5 sm:p-2 rounded-xl w-[130px] sm:w-[190px]">
-          <TicketQR value={`${reference}-${seatId}`} />
+          <TicketQR value={reference} />
         </div>
         <span className="text-xs sm:text-sm font-mono tracking-widest whitespace-nowrap text-[#DDBD68] font-bold leading-none mt-1.5 sm:mt-4">
-          REF: {reference}-{seatId}
+          REF: {reference}
         </span>
       </div>
     </div>

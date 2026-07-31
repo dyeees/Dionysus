@@ -35,6 +35,7 @@ export interface ApiSeat {
 export interface ApiBooking {
   id: string;
   reference: string;
+  user_email: string;
   movie: ApiMovie;
   showtime: {
     date: string;
@@ -102,11 +103,62 @@ export const fetchMovie = async (id: string): Promise<ApiMovie> => {
 export const createBooking = async (payload: any): Promise<ApiBooking> => {
   const bookingsCol = collection(db, 'bookings');
   const newBooking = await addDoc(bookingsCol, {
+    status: 'pending',
     ...payload,
     created_at: new Date().toISOString(),
-    status: 'pending'
   });
   
   const bookingRef = await getDoc(newBooking);
   return { id: bookingRef.id, ...bookingRef.data() } as ApiBooking;
+};
+
+export const fetchUserBookings = async (email: string): Promise<ApiBooking[]> => {
+  const bookingsCol = collection(db, 'bookings');
+  const q = query(bookingsCol, where('user_email', '==', email));
+  const snapshot = await getDocs(q);
+  const bookings: ApiBooking[] = [];
+  snapshot.forEach(doc => {
+    bookings.push({ id: doc.id, ...doc.data() } as ApiBooking);
+  });
+  // Sort by created_at descending (newest first)
+  bookings.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  return bookings;
+};
+
+export const fetchOccupiedSeats = async (movieId: string, date: string, time: string): Promise<string[]> => {
+  const bookingsCol = collection(db, 'bookings');
+  const q = query(bookingsCol, where('movie.id', '==', movieId));
+  const snapshot = await getDocs(q);
+  
+  const occupied: string[] = [];
+  snapshot.forEach(doc => {
+    const data = doc.data() as ApiBooking;
+    if (data.status === 'confirmed' && data.showtime.date === date && data.showtime.time === time) {
+      data.seats.forEach(s => occupied.push(s.id));
+    }
+  });
+  return occupied;
+};
+
+// Payments (via backend)
+const BACKEND_URL = 'http://localhost:3001';
+
+export const createPaymentQR = async (referenceId: string, amount: number) => {
+  const response = await fetch(`${BACKEND_URL}/api/payment/qr`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reference_id: referenceId, amount })
+  });
+  if (!response.ok) {
+    throw new Error('Failed to create payment QR');
+  }
+  return response.json();
+};
+
+export const checkPaymentStatus = async (referenceId: string) => {
+  const response = await fetch(`${BACKEND_URL}/api/payment/status/${referenceId}`);
+  if (!response.ok) {
+    throw new Error('Failed to check payment status');
+  }
+  return response.json();
 };

@@ -150,7 +150,7 @@ export function MovieDetails({ movie, onTimeSelect }: MovieDetailsProps) {
         </h3>
 
         {hasShowtimes ? (
-          <div className="flex flex-wrap gap-6">
+          <div className="flex gap-6 overflow-x-auto pb-4 w-full scrollbar-thin">
             {movie.showtimes.map((dateObj, idx) => {
               // Format: "JUL 26" on top, "SUN" below (or "TODAY" + day name for today)
               const todayDayName = ['SUN','MON','TUE','WED','THU','FRI','SAT'][new Date().getDay()];
@@ -164,7 +164,7 @@ export function MovieDetails({ movie, onTimeSelect }: MovieDetailsProps) {
               return (
                 <div
                   key={idx}
-                  className="flex flex-col gap-2.5 w-[140px]"
+                  className="flex flex-col gap-2.5 w-[140px] shrink-0"
                   style={{ animationDelay: `${idx * 50 + 300}ms` }}
                 >
                   {/* Date header */}

@@ -223,7 +223,7 @@ export const fetchOccupiedSeats = async (movieId: string, date: string, time: st
 };
 
 // Payments (via backend)
-const BACKEND_URL = 'http://localhost:3001';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
 export const createPaymentQR = async (referenceId: string, amount: number) => {
   const response = await fetch(`${BACKEND_URL}/api/payment/qr`, {

@@ -6,6 +6,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Root health check route
+app.get('/', (req, res) => {
+  res.send('Dionysus Backend API is running!');
+});
+
 const XENDIT_SECRET_KEY = process.env.XENDIT_SECRET_KEY;
 const XENDIT_API_URL = 'https://api.xendit.co';
 

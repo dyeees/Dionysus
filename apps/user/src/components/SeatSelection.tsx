@@ -66,7 +66,7 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
     ? `TODAY · ${todayDayName}`
     : `${dateObj.month} ${dateObj.day} · ${dateObj.dayOfWeek}`;
 
-  // Fetch real occupied seats from the database
+  // Fetch occupied seats from the database
   useEffect(() => {
     fetchOccupiedSeats(movie.id, dateLabel, formatTime(time))
       .then(seats => setOccupied(new Set(seats)))
@@ -75,7 +75,6 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
 
   const totalSeats = selected.size;
 
-  // ── Browser back button navigation ───────────────────
   useEffect(() => {
     const handlePopState = (e: PopStateEvent) => {
       const state = e.state || {};
@@ -143,23 +142,32 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
     });
   };
 
-
-
-  // ────────────────────────────────────────────────────────
-  // VIEW: CONFIRMED
-  // ────────────────────────────────────────────────────────
+  // Booking confirmed screen
   if (view === 'confirmed') {
     return (
       <div className="flex flex-col items-center justify-center min-h-[55vh] gap-6 animate-fade-up text-center w-full max-w-4xl mx-auto">
-        <div className="relative flex justify-center items-center mt-8 mb-6">
+        <div className="relative flex justify-center items-center mt-1 mb-6">
           <div className="absolute w-32 h-32 bg-[#DDBD68]/20 rounded-full blur-[50px] animate-pulse" />
-          <div className="relative flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-tr from-[#DDBD68]/20 to-[#FCEEAA]/40 border border-[#DDBD68]/30 backdrop-blur-md shadow-[0_0_40px_rgba(221,189,104,0.3)]">
-            <svg className="w-8 h-8 text-[#FCEEAA] drop-shadow-[0_0_10px_rgba(252,238,170,0.8)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          <div 
+            className="relative flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-tr from-[#DDBD68]/30 to-[#FCEEAA]/10 border border-[#DDBD68]/50 backdrop-blur-md shadow-[0_0_50px_rgba(221,189,104,0.4)] opacity-0"
+            style={{ animation: 'scaleIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards' }}
+          >
+            <svg 
+              className="w-10 h-10 text-[#FCEEAA] drop-shadow-[0_0_15px_rgba(252,238,170,1)]" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
+              />
             </svg>
           </div>
         </div>
-        <div className="mb-8">
+        <div className="mb-4">
           <h2
             className="text-transparent bg-clip-text bg-gradient-to-r from-[#DDBD68] via-[#FCEEAA] to-[#DDBD68] text-3xl sm:text-4xl font-black tracking-[0.15em] m-0 drop-shadow-[0_0_15px_rgba(221,189,104,0.2)]"
             style={{ fontFamily: "'Cinzel', serif" }}
@@ -198,9 +206,7 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
     );
   }
 
-  // ────────────────────────────────────────────────────────
-  // VIEW: PAYMENT
-  // ────────────────────────────────────────────────────────
+  // Payment screen
   if (view === 'payment') {
 
     return (
@@ -269,9 +275,7 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
     );
   }
 
-  // ────────────────────────────────────────────────────────
-  // VIEW: SEATS
-  // ────────────────────────────────────────────────────────
+  // Seats selection screen
   const renderRow = (rowInfo: (typeof ROWS)[0]) => {
     const { row } = rowInfo;
 

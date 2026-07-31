@@ -50,20 +50,41 @@ export interface ApiBooking {
 }
 
 function parseShowtimes(showtimes: any[] = []): ShowtimeDate[] {
-  return showtimes.map(st => {
-    if (st.date && (!st.month || !st.day)) {
-      // Parse YYYY-MM-DD reliably in local timezone
-      const parts = st.date.split('-');
-      const dateObj = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-      const today = new Date();
-      const isToday = dateObj.toDateString() === today.toDateString();
-      const month = dateObj.toLocaleString('default', { month: 'short' }).toUpperCase();
-      const day = dateObj.getDate().toString().padStart(2, '0');
-      const dayOfWeek = dateObj.toLocaleString('default', { weekday: 'short' }).toUpperCase();
-      return { ...st, isToday, month, day, dayOfWeek };
-    }
-    return st;
-  });
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return showtimes
+    .map(st => {
+      let dateObj: Date | null = null;
+      
+      if (st.date) {
+        const parts = st.date.split('-');
+        if (parts.length === 3) {
+          dateObj = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        } else {
+          dateObj = new Date(st.date);
+        }
+      } else if (st.month && st.day) {
+        dateObj = new Date(`${st.month} ${st.day}, ${today.getFullYear()}`);
+        // If parsed date is in the deep past (e.g. Jan vs Dec), assume next year
+        if (today.getTime() - dateObj.getTime() > 180 * 24 * 60 * 60 * 1000) {
+          dateObj.setFullYear(today.getFullYear() + 1);
+        }
+      }
+
+      if (dateObj && !isNaN(dateObj.getTime())) {
+        if (dateObj.getTime() < today.getTime()) {
+          return null;
+        }
+        const isToday = dateObj.toDateString() === today.toDateString();
+        const month = dateObj.toLocaleString('default', { month: 'short' }).toUpperCase();
+        const day = dateObj.getDate().toString().padStart(2, '0');
+        const dayOfWeek = dateObj.toLocaleString('default', { weekday: 'short' }).toUpperCase();
+        return { ...st, isToday, month, day, dayOfWeek };
+      }
+      return st;
+    })
+    .filter(Boolean) as ShowtimeDate[];
 }
 
 function processMovie(doc: any): ApiMovie {

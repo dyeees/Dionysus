@@ -62,6 +62,15 @@ p {
   0%   { background-position: -200% center; }
   100% { background-position:  200% center; }
 }
+@keyframes checkmarkDraw {
+  0% { stroke-dashoffset: 50; }
+  100% { stroke-dashoffset: 0; }
+}
+@keyframes scaleIn {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
 
 .animate-fade-up {
   animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;

@@ -143,16 +143,7 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
     });
   };
 
-  // QR payload — encodes all booking info so scanner can display without a DB
-  const qrPayload = JSON.stringify({
-    ref: 'DIONYSUS',
-    id: bookingRef,
-    movie: movie.title,
-    date: dateLabel,
-    time: formatTime(time),
-    seats: [...selected].sort().join(', '),
-    method: 'Xendit QR',
-  });
+
 
   // ────────────────────────────────────────────────────────
   // VIEW: CONFIRMED

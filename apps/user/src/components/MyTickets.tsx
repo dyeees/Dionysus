@@ -10,6 +10,18 @@ export function MyTickets() {
   const [loading, setLoading] = useState(true);
   const [selectedTicket, setSelectedTicket] = useState<ApiBooking | null>(null);
 
+  // Browser back button navigation for ticket view
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      const state = e.state || {};
+      if (!state.ticketView) {
+        setSelectedTicket(null);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user?.email) {
@@ -59,7 +71,10 @@ export function MyTickets() {
         {bookings.map(booking => (
           <div 
             key={booking.id} 
-            onClick={() => setSelectedTicket(booking)}
+            onClick={() => {
+              window.history.pushState({ ticketView: true }, '', '#ticket');
+              setSelectedTicket(booking);
+            }}
             className="group flex items-center justify-between bg-white/[0.02] hover:bg-[#DDBD68]/10 border border-white/5 hover:border-[#DDBD68]/30 rounded-xl p-4 sm:p-5 transition-all duration-300 cursor-pointer"
           >
             <div className="flex items-center gap-4">
@@ -87,8 +102,7 @@ export function MyTickets() {
       </>
       ) : (
       // ── Full Ticket View ──────────────────────────────────────
-      <div className="flex flex-col items-center w-full max-w-4xl mx-auto animate-fade-up gap-6 cursor-pointer" onClick={() => setSelectedTicket(null)}>
-        
+      <div className="flex flex-col items-center w-full max-w-4xl mx-auto animate-fade-up gap-6">
         {selectedTicket.seats.map((seat) => (
           <Ticket 
             key={seat.id} 

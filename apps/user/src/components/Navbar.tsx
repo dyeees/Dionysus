@@ -8,12 +8,12 @@ interface NavbarProps {
   hideIndicator?: boolean;
   onLoginClick?: () => void;
   onLogout?: () => void;
-  onProfileClick?: () => void;
+  onTicketsClick?: () => void;
   hideNavElements?: boolean;
   currentUser?: User | null;
 }
 
-export function Navbar({ activeTab, setActiveTab, tabs, hideIndicator, onLoginClick, onLogout, onProfileClick, hideNavElements, currentUser }: NavbarProps) {
+export function Navbar({ activeTab, setActiveTab, tabs, hideIndicator, onLoginClick, onLogout, onTicketsClick, hideNavElements, currentUser }: NavbarProps) {
   const tabsRef = useRef<(HTMLButtonElement | null)[]>([])
   const [lineStyle, setLineStyle] = useState({ left: 0, width: 0 })
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -112,11 +112,11 @@ export function Navbar({ activeTab, setActiveTab, tabs, hideIndicator, onLoginCl
             </div>
             
             {isDropdownOpen && (
-              <div className="absolute right-0 mt-4 w-40 bg-[#0C0C0C]/95 backdrop-blur-xl border border-white/[0.08] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] overflow-hidden py-1 z-50">
+              <div className="absolute right-0 mt-4 w-40 bg-[#0C0C0C]/95 backdrop-blur-xl border border-white/[0.08] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] overflow-hidden z-50">
                 <button
                   onClick={() => {
                     setIsDropdownOpen(false)
-                    onProfileClick?.()
+                    onTicketsClick?.()
                   }}
                   className="w-full text-left px-5 py-3 text-xs tracking-widest uppercase text-[#DDBD68] hover:bg-white/[0.06] transition-colors cursor-pointer font-semibold border-b border-white/[0.06]"
                 >

@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 
@@ -5,7 +6,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const XENDIT_SECRET_KEY = 'xnd_development_tFryjM1A1ICkkTYA1CeLiYtWLORU33cd3lYCPIhK6qgensWI8JOBY4mnwXXzp';
+// Root health check route
+app.get('/', (req, res) => {
+  res.send('Dionysus Backend API is running!');
+});
+
+const XENDIT_SECRET_KEY = process.env.XENDIT_SECRET_KEY;
 const XENDIT_API_URL = 'https://api.xendit.co';
 
 // Mock in-memory database
@@ -106,7 +112,7 @@ app.get('/api/payment/status/:id', async (req, res) => {
   res.json({ status: payment.status });
 });
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Backend server listening on port ${PORT}`);
 });

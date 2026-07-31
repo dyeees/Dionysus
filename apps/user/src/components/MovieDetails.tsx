@@ -43,8 +43,6 @@ export function MovieDetails({ movie, onTimeSelect }: MovieDetailsProps) {
 
   return (
     <div className="flex flex-col gap-10 animate-fade-up">
-
-      {/* ── Hero Banner (blurred backdrop) ─────────────── */}
       <div className="relative w-full rounded-2xl overflow-hidden" style={{ minHeight: 220 }}>
         {/* Blurred bg */}
         <img
@@ -103,7 +101,7 @@ export function MovieDetails({ movie, onTimeSelect }: MovieDetailsProps) {
         </div>
       </div>
 
-      {/* ── Details Grid ───────────────────────────────── */}
+      {/* ── Details Grid ── */}
       <div className="flex flex-col gap-6">
 
         {/* Synopsis */}
@@ -134,13 +132,12 @@ export function MovieDetails({ movie, onTimeSelect }: MovieDetailsProps) {
         )}
       </div>
 
-      {/* ── Divider ────────────────────────────────────── */}
       <div
         className="h-px w-full"
         style={{ background: 'linear-gradient(to right, transparent, rgba(221,189,104,0.3) 30%, rgba(221,189,104,0.3) 70%, transparent)' }}
       />
 
-      {/* ── Showtimes ──────────────────────────────────── */}
+      {/* ── Showtimes ── */}
       <div className="animate-fade-up animate-fade-up-delay-3">
         <h3
           className="text-[#FCEEAA] text-xs uppercase tracking-[0.25em] font-semibold mb-5"
@@ -152,7 +149,6 @@ export function MovieDetails({ movie, onTimeSelect }: MovieDetailsProps) {
         {hasShowtimes ? (
           <div className="flex gap-6 overflow-x-auto pb-4 w-full scrollbar-thin">
             {movie.showtimes.map((dateObj, idx) => {
-              // Format: "JUL 26" on top, "SUN" below (or "TODAY" + day name for today)
               const todayDayName = ['SUN','MON','TUE','WED','THU','FRI','SAT'][new Date().getDay()];
               const topLine = dateObj.isToday
                 ? 'TODAY'
@@ -208,14 +204,13 @@ export function MovieDetails({ movie, onTimeSelect }: MovieDetailsProps) {
         )}
       </div>
 
-      {/* ── Trailer Modal ───────────────────────────────── */}
+      {/* ── Trailer Modal ── */}
       {showTrailer && movie.trailerUrl && createPortal(
         <div 
           className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-12 bg-black animate-fade-up"
           onClick={() => setShowTrailer(false)}
         >
           <div className="relative w-full max-w-6xl">
-            {/* Modal Header (Floating above the video so the video stays perfectly centered) */}
             <div className="absolute -top-10 left-0 right-0 flex items-center justify-between px-2">
               <h3 className="text-[#DDBD68] font-serif font-bold tracking-[0.2em] uppercase text-xs sm:text-sm">
                 Official Trailer

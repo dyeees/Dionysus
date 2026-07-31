@@ -1,7 +1,8 @@
 import { useState, useEffect, Fragment } from 'react';
 import { auth } from '../firebase';
-import { createPaymentQR, checkPaymentStatus, createBooking, fetchOccupiedSeats } from '../api';
+import { createPaymentQR, checkPaymentStatus, createBooking, fetchOccupiedSeats, generateCustomRef } from '../api';
 import type { ApiMovie as Movie, ShowtimeDate } from '../api';
+import { Ticket } from './Ticket';
 
 interface SeatSelectionProps {
   movie: Movie;
@@ -57,15 +58,15 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
   const [qrString, setQrString] = useState<string>('');
   const [isQrLoading, setIsQrLoading] = useState(false);
 
-  // Booking reference — generated once per session
-  const [bookingRef] = useState(() => `BK-${Math.random().toString(36).slice(2, 6).toUpperCase()}`);
+  // Booking ID — generated once per session
+  const [bookingId] = useState(() => `BK-${Math.random().toString(36).slice(2, 6).toUpperCase()}`);
 
   const todayDayName = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][new Date().getDay()];
   const dateLabel = dateObj.isToday
     ? `TODAY · ${todayDayName}`
     : `${dateObj.month} ${dateObj.day} · ${dateObj.dayOfWeek}`;
 
-  // Fetch real occupied seats from the database
+  // Fetch occupied seats from the database
   useEffect(() => {
     fetchOccupiedSeats(movie.id, dateLabel, formatTime(time))
       .then(seats => setOccupied(new Set(seats)))
@@ -74,7 +75,6 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
 
   const totalSeats = selected.size;
 
-  // ── Browser back button navigation ───────────────────
   useEffect(() => {
     const handlePopState = (e: PopStateEvent) => {
       const state = e.state || {};
@@ -95,7 +95,7 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
       setIsQrLoading(true);
       try {
         const amount = totalSeats * 350; // Fixed seat price for now
-        const data = await createPaymentQR(bookingRef, amount);
+        const data = await createPaymentQR(bookingId, amount);
         if (data.qr_string) setQrString(data.qr_string);
       } catch (e) {
         console.error(e);
@@ -110,27 +110,27 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
     if (view === 'payment' && qrString) {
       const interval = setInterval(async () => {
         try {
-          const res = await checkPaymentStatus(bookingRef);
+          const res = await checkPaymentStatus(bookingId);
           if (res.status === 'PAID') {
             clearInterval(interval);
             // Record in Firebase Database
+            const seatsArray = [...selected].map(id => ({ id, row: id[0], number: parseInt(id.slice(1)), type: 'standard' as const, price: 350, is_occupied: true }));
             await createBooking({
-              reference: bookingRef,
+              booking_id: bookingId,
               user_email: auth.currentUser?.email || 'guest',
               movie: { id: movie.id, title: movie.title, img: movie.img },
               showtime: { date: dateLabel, time: formatTime(time), hall: 'Cinema 1' },
-              seats: [...selected].map(id => ({ id, row: id[0], number: parseInt(id.slice(1)) })),
               status: 'confirmed',
               total_amount: totalSeats * 350,
               payment_method: 'Xendit QR',
-            });
+            }, seatsArray);
             setView('confirmed');
           }
         } catch (e) {}
       }, 3000);
       return () => clearInterval(interval);
     }
-  }, [view, qrString, bookingRef, movie, dateLabel, time, selected, totalSeats]);
+  }, [view, qrString, bookingId, movie, dateLabel, time, selected, totalSeats]);
 
   const toggleSeat = (id: string) => {
     if (occupied.has(id)) return;
@@ -142,80 +142,63 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
     });
   };
 
-  // QR payload — encodes all booking info so scanner can display without a DB
-  const qrPayload = JSON.stringify({
-    ref: 'DIONYSUS',
-    id: bookingRef,
-    movie: movie.title,
-    date: dateLabel,
-    time: formatTime(time),
-    seats: [...selected].sort().join(', '),
-    method: 'Xendit QR',
-  });
-
-  // ────────────────────────────────────────────────────────
-  // VIEW: CONFIRMED
-  // ────────────────────────────────────────────────────────
+  // Booking confirmed screen
   if (view === 'confirmed') {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[55vh] gap-6 animate-fade-up text-center">
-        <div className="text-5xl">🎟️</div>
-        <div>
+      <div className="flex flex-col items-center justify-center min-h-[55vh] gap-6 animate-fade-up text-center w-full max-w-4xl mx-auto">
+        <div className="relative flex justify-center items-center mt-1 mb-6">
+          <div className="absolute w-32 h-32 bg-[#DDBD68]/20 rounded-full blur-[50px] animate-pulse" />
+          <div 
+            className="relative flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-tr from-[#DDBD68]/30 to-[#FCEEAA]/10 border border-[#DDBD68]/50 backdrop-blur-md shadow-[0_0_50px_rgba(221,189,104,0.4)] opacity-0"
+            style={{ animation: 'scaleIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards' }}
+          >
+            <svg 
+              className="w-10 h-10 text-[#FCEEAA] drop-shadow-[0_0_15px_rgba(252,238,170,1)]" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
+              />
+            </svg>
+          </div>
+        </div>
+        <div className="mb-4">
           <h2
-            className="text-[#DDBD68] text-2xl sm:text-3xl font-black tracking-widest m-0"
+            className="text-transparent bg-clip-text bg-gradient-to-r from-[#DDBD68] via-[#FCEEAA] to-[#DDBD68] text-3xl sm:text-4xl font-black tracking-[0.15em] m-0 drop-shadow-[0_0_15px_rgba(221,189,104,0.2)]"
             style={{ fontFamily: "'Cinzel', serif" }}
           >
-            Booking Confirmed!
+            BOOKING CONFIRMED
           </h2>
-          <p className="text-[#DDBD68]/55 text-sm tracking-wide max-w-xs leading-relaxed mt-2">
-            Show this QR code at the entrance.
-          </p>
+          <div className="flex items-center justify-center gap-3 mt-4">
+            <div className="w-12 h-[1px] bg-gradient-to-r from-transparent to-[#DDBD68]/50" />
+            <p className="text-[#DDBD68]/70 text-xs sm:text-sm tracking-[0.1em] uppercase font-semibold">
+              Your e-tickets are ready
+            </p>
+            <div className="w-12 h-[1px] bg-gradient-to-l from-transparent to-[#DDBD68]/50" />
+          </div>
         </div>
 
-        {/* QR Ticket card */}
-        <div className="bg-white rounded-2xl p-5 shadow-[0_0_60px_rgba(221,189,104,0.2)] w-full max-w-xs">
-          {/* Ticket header */}
-          <div className="mb-4 text-center">
-            <p className="text-[#0C0C0C] font-black tracking-[0.2em] text-sm uppercase" style={{ fontFamily: "'Cinzel', serif" }}>
-              Dionysus
-            </p>
-            <p className="text-[#0C0C0C]/40 text-[10px] tracking-widest uppercase mt-0.5">Cinema · E-Ticket</p>
-          </div>
-
-          {/* QR code */}
-          <div className="flex justify-center mb-4">
-            <BookingQR value={qrPayload} />
-          </div>
-
-          {/* Booking ref */}
-          <p className="text-center text-[#0C0C0C] font-mono font-bold text-sm tracking-[0.2em] mb-4">{bookingRef}</p>
-
-          {/* Divider perforation */}
-          <div className="flex items-center gap-1 my-3">
-            <div className="w-4 h-4 rounded-full bg-[#0C0C0C]/8 -ml-7 shrink-0" />
-            <div className="flex-1 border-t-2 border-dashed border-[#0C0C0C]/12" />
-            <div className="w-4 h-4 rounded-full bg-[#0C0C0C]/8 -mr-7 shrink-0" />
-          </div>
-
-          {/* Booking details */}
-          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-left mt-3">
-            {[
-              { label: 'Film', value: movie.title },
-              { label: 'Date', value: dateLabel },
-              { label: 'Time', value: formatTime(time) },
-              { label: 'Seats', value: [...selected].sort().join(', ') },
-            ].map(({ label, value }) => (
-              <div key={label}>
-                <p className="text-[#0C0C0C]/35 text-[9px] uppercase tracking-widest font-semibold">{label}</p>
-                <p className="text-[#0C0C0C] text-xs font-semibold mt-0.5 leading-tight">{value}</p>
-              </div>
-            ))}
-          </div>
+        {/* Display one Ticket per seat */}
+        <div className="flex flex-col gap-6 w-full">
+          {[...selected].sort().map((seatId) => (
+            <Ticket
+              key={seatId}
+              movie={{ title: movie.title, img: movie.img }}
+              showtime={{ date: dateLabel, time: formatTime(time) }}
+              seatId={seatId}
+              reference={generateCustomRef(dateLabel, seatId)}
+            />
+          ))}
         </div>
 
         <button
           onClick={onBack}
-          className="border border-[#DDBD68]/35 text-[#DDBD68] hover:bg-[#DDBD68]/10 px-8 py-2.5 rounded-full text-xs tracking-widest uppercase font-semibold transition-all cursor-pointer"
+          className="mt-4 border border-[#DDBD68]/35 text-[#DDBD68] hover:bg-[#DDBD68]/10 px-8 py-2.5 rounded-full text-xs tracking-widest uppercase font-semibold transition-all cursor-pointer"
         >
           Back to Movies
         </button>
@@ -223,9 +206,7 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
     );
   }
 
-  // ────────────────────────────────────────────────────────
-  // VIEW: PAYMENT
-  // ────────────────────────────────────────────────────────
+  // Payment screen
   if (view === 'payment') {
 
     return (
@@ -233,12 +214,7 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
 
         {/* Header */}
         <div>
-          <button 
-            onClick={() => setView('seats')}
-            className="flex items-center gap-2 text-[#DDBD68]/60 hover:text-[#DDBD68] text-[10px] tracking-widest uppercase font-semibold mb-4 transition-colors cursor-pointer"
-          >
-            ← Back to Seats
-          </button>
+
           <h2
             className="text-[#DDBD68] font-black tracking-wider leading-tight m-0"
             style={{ fontFamily: "'Cinzel', serif", fontSize: 'clamp(1rem, 2.2vw, 1.5rem)' }}
@@ -299,9 +275,7 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
     );
   }
 
-  // ────────────────────────────────────────────────────────
-  // VIEW: SEATS
-  // ────────────────────────────────────────────────────────
+  // Seats selection screen
   const renderRow = (rowInfo: (typeof ROWS)[0]) => {
     const { row } = rowInfo;
 

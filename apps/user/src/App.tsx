@@ -12,6 +12,8 @@ import type { User } from 'firebase/auth'
 import { fetchMovies, fetchComingSoon, type ApiMovie as Movie, type ShowtimeDate } from './api'
 import './App.css'
 
+const slugify = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
 const TABS = ['NOW SHOWING', 'COMING SOON']
 
 interface BookingInfo {
@@ -23,9 +25,9 @@ function App() {
   const [activeTab, setActiveTab] = useState('NOW SHOWING')
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null)
   const [bookingInfo, setBookingInfo] = useState<BookingInfo | null>(null)
-  const [showProfile, setShowProfile] = useState(false)
+  const [showTickets, setShowTickets] = useState(false)
   const [authView, setAuthView] = useState<'none' | 'login' | 'signup'>(() => {
-    if (window.location.hash === '#profile') return 'none'
+    if (window.location.hash === '#tickets') return 'none'
     if (window.location.hash === '#login') return 'login'
     if (window.location.hash === '#signup') return 'signup'
     return 'none'
@@ -65,33 +67,35 @@ function App() {
     loadData()
   }, [])
 
-  // View derivation: 'auth' | 'profile' | 'grid' | 'details' | 'seats'
-  const view = authView !== 'none' ? 'auth' : showProfile ? 'profile' : !selectedMovie ? 'grid' : !bookingInfo ? 'details' : 'seats'
+  // View derivation: 'auth' | 'tickets' | 'grid' | 'details' | 'seats'
+  const view = authView !== 'none' ? 'auth' : showTickets ? 'tickets' : !selectedMovie ? 'grid' : !bookingInfo ? 'details' : 'seats'
 
   useEffect(() => {
     const handlePopState = (e: PopStateEvent) => {
       const state = e.state || {}
       if (state.login || window.location.hash === '#login') {
         setAuthView('login')
-        setShowProfile(false)
+        setShowTickets(false)
       } else if (state.signup || window.location.hash === '#signup') {
         setAuthView('signup')
-        setShowProfile(false)
-      } else if (state.profile || window.location.hash === '#profile') {
-        setShowProfile(true)
+        setShowTickets(false)
+      } else if (state.tickets || window.location.hash === '#tickets') {
+        setShowTickets(true)
         setAuthView('none')
-      } else if (state.payment) {
-        // handled by SeatSelection
-      } else if (state.seats) {
-        // handled by SeatSelection
+      } else if (state.payment || window.location.hash === '#payment') {
+        setShowTickets(false)
+        setAuthView('none')
+      } else if (state.seats || window.location.hash === '#seats') {
+        setShowTickets(false)
+        setAuthView('none')
       } else if (state.movieId) {
         setBookingInfo(null)
-        setShowProfile(false)
+        setShowTickets(false)
         setAuthView('none')
       } else {
         setBookingInfo(null)
         setSelectedMovie(null)
-        setShowProfile(false)
+        setShowTickets(false)
         setAuthView('none')
       }
     }
@@ -100,23 +104,23 @@ function App() {
       setAuthView('login')
     } else if (window.location.hash === '#signup') {
       setAuthView('signup')
-    } else if (window.location.hash === '#profile') {
-      setShowProfile(true)
+    } else if (window.location.hash === '#tickets') {
+      setShowTickets(true)
     }
     return () => window.removeEventListener('popstate', handlePopState)
   }, [])
 
   const handleMovieClick = (movie: Movie) => {
-    window.history.pushState({ movieId: movie.id }, '', `#${movie.id}`)
+    window.history.pushState({ movieId: movie.id }, '', `#${slugify(movie.title)}`)
     setSelectedMovie(movie)
     setBookingInfo(null)
-    setShowProfile(false)
+    setShowTickets(false)
     setAuthView('none')
   }
 
-  const handleProfileClick = () => {
-    window.history.pushState({ profile: true }, '', '#profile')
-    setShowProfile(true)
+  const handleTicketsClick = () => {
+    window.history.pushState({ tickets: true }, '', '#tickets')
+    setShowTickets(true)
     setSelectedMovie(null)
     setBookingInfo(null)
     setAuthView('none')
@@ -125,7 +129,7 @@ function App() {
   const handleLoginClick = () => {
     window.history.pushState({ login: true }, '', '#login')
     setAuthView('login')
-    setShowProfile(false)
+    setShowTickets(false)
     setSelectedMovie(null)
     setBookingInfo(null)
   }
@@ -133,7 +137,7 @@ function App() {
   const handleSignupClick = () => {
     window.history.pushState({ signup: true }, '', '#signup')
     setAuthView('signup')
-    setShowProfile(false)
+    setShowTickets(false)
     setSelectedMovie(null)
     setBookingInfo(null)
   }
@@ -141,7 +145,7 @@ function App() {
   const handleBackFromAuth = () => {
     window.history.pushState({}, '', '/')
     setAuthView('none')
-    setShowProfile(false)
+    setShowTickets(false)
   }
 
   const handleTimeSelect = (dateObj: ShowtimeDate, time: string) => {
@@ -151,6 +155,7 @@ function App() {
 
   // Called after confirmed booking — go all the way back to grid
   const handleBackFromSeats = () => {
+    window.history.pushState({}, '', '/')
     setBookingInfo(null)
     setSelectedMovie(null)
   }
@@ -159,7 +164,7 @@ function App() {
     try {
       await signOut(auth)
       setAuthView('none')
-      setShowProfile(false)
+      setShowTickets(false)
       window.history.pushState({}, '', '/')
     } catch (error) {
       console.error('Error logging out:', error)
@@ -174,14 +179,15 @@ function App() {
           setActiveTab(tab)
           setSelectedMovie(null)
           setBookingInfo(null)
-          setShowProfile(false)
+          setShowTickets(false)
           setAuthView('none')
+          window.history.pushState({}, '', '/')
         }}
         tabs={TABS}
-        hideIndicator={!!selectedMovie || authView !== 'none' || showProfile}
+        hideIndicator={!!selectedMovie || authView !== 'none' || showTickets}
         onLoginClick={handleLoginClick}
         onLogout={handleLogout}
-        onProfileClick={handleProfileClick}
+        onTicketsClick={handleTicketsClick}
         hideNavElements={authView !== 'none'}
         currentUser={currentUser}
       />
@@ -209,7 +215,7 @@ function App() {
           </>
         )}
 
-        {view === 'profile' && <MyTickets />}
+        {view === 'tickets' && <MyTickets />}
 
         {view === 'details' && selectedMovie && (
           <MovieDetails

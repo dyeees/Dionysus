@@ -16,6 +16,7 @@
     "axios": "^1.18.1",
     "cloudinary": "^2.10.0",
     "firebase": "^12.16.0",
+    "html2canvas": "^1.4.1",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

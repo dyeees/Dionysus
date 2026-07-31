@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { createPortal } from 'react-dom';
 import { fetchUserBookings, type ApiBooking } from '../api';
 import { auth } from '../firebase';
 
@@ -98,7 +97,7 @@ export function MyTickets() {
       // ── Full Ticket View ──────────────────────────────────────
       <div className="flex flex-col items-center w-full max-w-4xl mx-auto animate-fade-up gap-6 cursor-pointer" onClick={() => setSelectedTicket(null)}>
         
-        {selectedTicket.seats.map((seat, index) => (
+        {selectedTicket.seats.map((seat) => (
         <div key={seat.id} onClick={(e) => e.stopPropagation()} className="flex w-full h-[220px] sm:h-[280px] relative text-white drop-shadow-[0_20px_40px_rgba(221,189,104,0.15)] filter cursor-default">
           
           {/* Main Ticket Body (Left + Middle) */}

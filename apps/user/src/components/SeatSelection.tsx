@@ -2,6 +2,7 @@ import { useState, useEffect, Fragment } from 'react';
 import { auth } from '../firebase';
 import { createPaymentQR, checkPaymentStatus, createBooking, fetchOccupiedSeats } from '../api';
 import type { ApiMovie as Movie, ShowtimeDate } from '../api';
+import { Ticket } from './Ticket';
 
 interface SeatSelectionProps {
   movie: Movie;
@@ -158,64 +159,47 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
   // ────────────────────────────────────────────────────────
   if (view === 'confirmed') {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[55vh] gap-6 animate-fade-up text-center">
-        <div className="text-5xl">🎟️</div>
-        <div>
+      <div className="flex flex-col items-center justify-center min-h-[55vh] gap-6 animate-fade-up text-center w-full max-w-4xl mx-auto">
+        <div className="relative flex justify-center items-center mt-8 mb-6">
+          <div className="absolute w-32 h-32 bg-[#DDBD68]/20 rounded-full blur-[50px] animate-pulse" />
+          <div className="relative flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-tr from-[#DDBD68]/20 to-[#FCEEAA]/40 border border-[#DDBD68]/30 backdrop-blur-md shadow-[0_0_40px_rgba(221,189,104,0.3)]">
+            <svg className="w-8 h-8 text-[#FCEEAA] drop-shadow-[0_0_10px_rgba(252,238,170,0.8)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+        </div>
+        <div className="mb-8">
           <h2
-            className="text-[#DDBD68] text-2xl sm:text-3xl font-black tracking-widest m-0"
+            className="text-transparent bg-clip-text bg-gradient-to-r from-[#DDBD68] via-[#FCEEAA] to-[#DDBD68] text-3xl sm:text-4xl font-black tracking-[0.15em] m-0 drop-shadow-[0_0_15px_rgba(221,189,104,0.2)]"
             style={{ fontFamily: "'Cinzel', serif" }}
           >
-            Booking Confirmed!
+            BOOKING CONFIRMED
           </h2>
-          <p className="text-[#DDBD68]/55 text-sm tracking-wide max-w-xs leading-relaxed mt-2">
-            Show this QR code at the entrance.
-          </p>
+          <div className="flex items-center justify-center gap-3 mt-4">
+            <div className="w-12 h-[1px] bg-gradient-to-r from-transparent to-[#DDBD68]/50" />
+            <p className="text-[#DDBD68]/70 text-xs sm:text-sm tracking-[0.1em] uppercase font-semibold">
+              Your e-tickets are ready
+            </p>
+            <div className="w-12 h-[1px] bg-gradient-to-l from-transparent to-[#DDBD68]/50" />
+          </div>
         </div>
 
-        {/* QR Ticket card */}
-        <div className="bg-white rounded-2xl p-5 shadow-[0_0_60px_rgba(221,189,104,0.2)] w-full max-w-xs">
-          {/* Ticket header */}
-          <div className="mb-4 text-center">
-            <p className="text-[#0C0C0C] font-black tracking-[0.2em] text-sm uppercase" style={{ fontFamily: "'Cinzel', serif" }}>
-              Dionysus
-            </p>
-            <p className="text-[#0C0C0C]/40 text-[10px] tracking-widest uppercase mt-0.5">Cinema · E-Ticket</p>
-          </div>
-
-          {/* QR code */}
-          <div className="flex justify-center mb-4">
-            <BookingQR value={qrPayload} />
-          </div>
-
-          {/* Booking ref */}
-          <p className="text-center text-[#0C0C0C] font-mono font-bold text-sm tracking-[0.2em] mb-4">{bookingRef}</p>
-
-          {/* Divider perforation */}
-          <div className="flex items-center gap-1 my-3">
-            <div className="w-4 h-4 rounded-full bg-[#0C0C0C]/8 -ml-7 shrink-0" />
-            <div className="flex-1 border-t-2 border-dashed border-[#0C0C0C]/12" />
-            <div className="w-4 h-4 rounded-full bg-[#0C0C0C]/8 -mr-7 shrink-0" />
-          </div>
-
-          {/* Booking details */}
-          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-left mt-3">
-            {[
-              { label: 'Film', value: movie.title },
-              { label: 'Date', value: dateLabel },
-              { label: 'Time', value: formatTime(time) },
-              { label: 'Seats', value: [...selected].sort().join(', ') },
-            ].map(({ label, value }) => (
-              <div key={label}>
-                <p className="text-[#0C0C0C]/35 text-[9px] uppercase tracking-widest font-semibold">{label}</p>
-                <p className="text-[#0C0C0C] text-xs font-semibold mt-0.5 leading-tight">{value}</p>
-              </div>
-            ))}
-          </div>
+        {/* Display one Ticket per seat */}
+        <div className="flex flex-col gap-6 w-full">
+          {[...selected].sort().map((seatId) => (
+            <Ticket
+              key={seatId}
+              movie={{ title: movie.title, img: movie.img }}
+              showtime={{ date: dateLabel, time: formatTime(time) }}
+              seatId={seatId}
+              reference={bookingRef}
+            />
+          ))}
         </div>
 
         <button
           onClick={onBack}
-          className="border border-[#DDBD68]/35 text-[#DDBD68] hover:bg-[#DDBD68]/10 px-8 py-2.5 rounded-full text-xs tracking-widest uppercase font-semibold transition-all cursor-pointer"
+          className="mt-4 border border-[#DDBD68]/35 text-[#DDBD68] hover:bg-[#DDBD68]/10 px-8 py-2.5 rounded-full text-xs tracking-widest uppercase font-semibold transition-all cursor-pointer"
         >
           Back to Movies
         </button>
@@ -233,12 +217,7 @@ export function SeatSelection({ movie, dateObj, time, onBack }: SeatSelectionPro
 
         {/* Header */}
         <div>
-          <button 
-            onClick={() => setView('seats')}
-            className="flex items-center gap-2 text-[#DDBD68]/60 hover:text-[#DDBD68] text-[10px] tracking-widest uppercase font-semibold mb-4 transition-colors cursor-pointer"
-          >
-            ← Back to Seats
-          </button>
+
           <h2
             className="text-[#DDBD68] font-black tracking-wider leading-tight m-0"
             style={{ fontFamily: "'Cinzel', serif", fontSize: 'clamp(1rem, 2.2vw, 1.5rem)' }}

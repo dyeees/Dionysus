@@ -12,6 +12,9 @@ app.get('/', (req, res) => {
 });
 
 const XENDIT_SECRET_KEY = process.env.XENDIT_SECRET_KEY;
+if (!XENDIT_SECRET_KEY) {
+  console.warn("WARNING: XENDIT_SECRET_KEY is not set in environment variables!");
+}
 const XENDIT_API_URL = 'https://api.xendit.co';
 
 // Mock in-memory database

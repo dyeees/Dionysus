@@ -105,14 +105,14 @@ export function Navbar({ activeTab, setActiveTab, tabs, hideIndicator, onLoginCl
           <div className="relative" ref={dropdownRef}>
             <div 
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#DDBD68] to-[#FCEEAA] text-[#0C0C0C] flex items-center justify-center font-bold text-sm uppercase shadow-[0_0_15px_rgba(221,189,104,0.3)] select-none cursor-pointer hover:scale-105 transition-transform"
+              className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#DDBD68] to-[#FCEEAA] text-[#0C0C0C] flex items-center justify-center font-bold text-sm uppercase select-none cursor-pointer hover:scale-105 transition-transform"
               title={currentUser.displayName || currentUser.email || ''}
             >
               {currentUser.displayName ? currentUser.displayName.charAt(0) : currentUser.email?.charAt(0)}
             </div>
             
             {isDropdownOpen && (
-              <div className="absolute right-0 mt-4 w-40 bg-[#0C0C0C]/95 backdrop-blur-xl border border-white/[0.08] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] overflow-hidden z-50">
+              <div className="absolute right-0 mt-4 w-40 bg-[#0C0C0C]/95 backdrop-blur-xl border border-white/[0.08] rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] overflow-hidden z-[9999]">
                 <button
                   onClick={() => {
                     setIsDropdownOpen(false)

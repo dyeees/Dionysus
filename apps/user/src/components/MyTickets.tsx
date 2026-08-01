@@ -58,18 +58,19 @@ export function MyTickets() {
     );
   }
 
-  // Group tickets by booking_id
+  // Group tickets by movie and showtime
   const groupedTickets = Object.values(
     tickets.reduce((acc, ticket) => {
-      if (!acc[ticket.booking_id]) {
-        acc[ticket.booking_id] = {
-          booking_id: ticket.booking_id,
+      const groupKey = `${ticket.movie.id}-${ticket.showtime.date}-${ticket.showtime.time}`;
+      if (!acc[groupKey]) {
+        acc[groupKey] = {
+          booking_id: groupKey,
           movie: ticket.movie,
           showtime: ticket.showtime,
           tickets: []
         };
       }
-      acc[ticket.booking_id].tickets.push(ticket);
+      acc[groupKey].tickets.push(ticket);
       return acc;
     }, {} as Record<string, { booking_id: string, movie: any, showtime: any, tickets: ApiTicket[] }>)
   );

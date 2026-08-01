@@ -46,7 +46,7 @@ export function Navbar({ activeTab, setActiveTab, tabs, hideIndicator, onLoginCl
   }, [activeTab, tabs])
 
   return (
-    <nav className="relative flex flex-wrap md:flex-nowrap items-center justify-between px-4 sm:px-8 md:px-12 lg:px-20 py-3 md:py-4 gap-y-4 bg-[#0A0A0A]/95 backdrop-blur-md border-b border-white/5">
+    <nav className="relative z-50 flex flex-wrap md:flex-nowrap items-center justify-between px-4 sm:px-8 md:px-12 lg:px-20 py-3 md:py-4 gap-y-4 bg-[#0A0A0A]/95 backdrop-blur-md border-b border-white/5">
       {/* Fading gold border bottom */}
       <div
         className="absolute bottom-0 left-0 right-0 h-[1px] pointer-events-none"

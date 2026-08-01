@@ -100,7 +100,7 @@ export function Navbar({ activeTab, setActiveTab, tabs, hideIndicator, onLoginCl
       </div>
 
       {/* Right actions */}
-      <div className={`flex items-center gap-2 sm:gap-3 relative z-10 order-2 md:order-3 ${hideNavElements ? 'opacity-0 pointer-events-none' : ''}`}>
+      <div className={`flex items-center gap-2 sm:gap-3 relative z-50 order-2 md:order-3 ${hideNavElements ? 'opacity-0 pointer-events-none' : ''}`}>
         {currentUser ? (
           <div className="relative" ref={dropdownRef}>
             <div 

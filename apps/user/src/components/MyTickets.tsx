@@ -5,7 +5,28 @@ import { auth } from '../firebase';
 
 import { Ticket } from './Ticket';
 
+function isTicketPast(ticket: ApiTicket): boolean {
+  const ref = ticket.ticket_ref;
+  if (!ref || ref.length < 8) return false;
+  const year = parseInt(ref.substring(0, 4));
+  const day = parseInt(ref.substring(4, 6));
+  const month = parseInt(ref.substring(6, 8)) - 1;
+  
+  const timeStr = ticket.showtime.time;
+  if (!timeStr) return false;
+  const parts = timeStr.split(' ');
+  if (parts.length !== 2) return false;
+  const [time, modifier] = parts;
+  let [hours, minutes] = time.split(':').map(Number);
+  if (modifier === 'PM' && hours < 12) hours += 12;
+  if (modifier === 'AM' && hours === 12) hours = 0;
+  
+  const showDate = new Date(year, month, day, hours, minutes);
+  return showDate.getTime() < Date.now();
+}
+
 export function MyTickets() {
+  const [activeTab, setActiveTab] = useState<'UPCOMING' | 'PAST'>('UPCOMING');
   const [tickets, setTickets] = useState<ApiTicket[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedGroup, setSelectedGroup] = useState<{ booking_id: string, movie: any, showtime: any, tickets: ApiTicket[] } | null>(null);
@@ -73,18 +94,46 @@ export function MyTickets() {
       acc[groupKey].tickets.push(ticket);
       return acc;
     }, {} as Record<string, { booking_id: string, movie: any, showtime: any, tickets: ApiTicket[] }>)
-  );
+  ).filter(group => {
+    const isPast = isTicketPast(group.tickets[0]);
+    return activeTab === 'UPCOMING' ? !isPast : isPast;
+  });
 
   return (
     <div className="flex flex-col gap-8 animate-fade-up">
       {!selectedGroup ? (
         <>
-          <h2 className="text-[#DDBD68] font-black text-2xl sm:text-3xl tracking-[0.2em] uppercase" style={{ fontFamily: "'Cinzel', serif" }}>
-            My Tickets
-          </h2>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-8 border-b border-white/[0.06] pb-4 mb-2">
+            <h2 className="text-[#DDBD68] font-black text-2xl sm:text-3xl tracking-[0.2em] uppercase leading-none" style={{ fontFamily: "'Cinzel', serif" }}>
+              My Tickets
+            </h2>
+            <div className="flex gap-6 sm:gap-8 w-full sm:w-auto items-baseline">
+              <button
+                onClick={() => setActiveTab('UPCOMING')}
+                className={`relative pb-2 text-xs sm:text-sm tracking-[0.2em] font-bold uppercase transition-all duration-300 origin-bottom-left ${
+                  activeTab === 'UPCOMING' ? 'text-[#DDBD68] scale-110' : 'text-white/30 hover:text-white/60 scale-90'
+                }`}
+              >
+                Upcoming
+              </button>
+              <button
+                onClick={() => setActiveTab('PAST')}
+                className={`relative pb-2 text-xs sm:text-sm tracking-[0.2em] font-bold uppercase transition-all duration-300 origin-bottom-left ${
+                  activeTab === 'PAST' ? 'text-[#DDBD68] scale-110' : 'text-white/30 hover:text-white/60 scale-90'
+                }`}
+              >
+                Past
+              </button>
+            </div>
+          </div>
           
           {/* Simple List View */}
           <div className="flex flex-col gap-3">
+            {groupedTickets.length === 0 && (
+              <div className="text-center py-10 text-white/40 text-sm tracking-widest uppercase">
+                No {activeTab.toLowerCase()} tickets found.
+              </div>
+            )}
         {groupedTickets.map(group => (
           <div 
             key={group.booking_id} 

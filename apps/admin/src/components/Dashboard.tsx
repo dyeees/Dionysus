@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { fetchAllMovies, type ApiMovie } from '../api';
-import { Pencil, Loader2, Calendar } from 'lucide-react';
+import { Pencil, Loader2, Clock, Calendar } from 'lucide-react';
 
 export function Dashboard({ onEditMovie }: { onEditMovie: (movie: ApiMovie) => void }) {
   const [movies, setMovies] = useState<ApiMovie[]>([]);
@@ -21,46 +21,81 @@ export function Dashboard({ onEditMovie }: { onEditMovie: (movie: ApiMovie) => v
     );
   }
 
+  const nowShowing = movies.filter(m => m.status === 'now_showing');
+  const comingSoon = movies.filter(m => m.status === 'coming_soon');
+
   return (
-    <div className="max-w-7xl mx-auto pt-32 pb-20 px-6">
-      <div className="mb-10 flex items-center justify-between">
+    <div className="max-w-7xl mx-auto pt-32 pb-20 px-6 animate-fade-in">
+
+      {/* Page Header */}
+      <div className="mb-12 flex items-end justify-between">
         <div>
-          <h1 className="font-serif text-3xl sm:text-4xl text-white mb-2 tracking-wide">Movie Database</h1>
-          <p className="text-white/40 tracking-widest text-xs uppercase">Manage your listings</p>
+          <h1 className="font-serif text-3xl sm:text-4xl font-black text-[#DDBD68] tracking-[0.15em] uppercase">
+            Movie Database
+          </h1>
+          <p className="text-white/30 tracking-[0.3em] text-[10px] uppercase mt-2 font-medium">
+            {movies.length} titles · {nowShowing.length} showing · {comingSoon.length} coming soon
+          </p>
         </div>
+        {/* Decorative fading line */}
+        <div className="hidden md:block flex-1 h-px mx-8 bg-gradient-to-r from-[#DDBD68]/20 to-transparent" />
       </div>
 
       {movies.length === 0 ? (
-        <div className="text-center bg-[#111] border border-white/5 p-12 rounded-2xl">
-          <p className="text-white/40">No movies found in the database.</p>
+        <div className="text-center bg-[#111]/80 border border-white/5 p-16 rounded-2xl backdrop-blur-sm">
+          <p className="text-white/30 tracking-widest text-sm">No movies found in the database.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
           {movies.map(movie => (
-            <div key={movie.id} className="bg-[#111] border border-white/5 rounded-2xl overflow-hidden hover:border-white/10 transition-colors group flex flex-col">
+            <div
+              key={movie.id}
+              className="relative bg-[#0E0E0E] border border-white/[0.06] rounded-2xl overflow-hidden hover:border-[#DDBD68]/25 transition-all duration-500 group flex flex-col shadow-[0_4px_30px_rgba(0,0,0,0.5)] hover:shadow-[0_8px_40px_rgba(0,0,0,0.7),0_0_20px_rgba(221,189,104,0.05)]"
+            >
+              {/* Poster */}
               <div className="aspect-[2/3] w-full relative overflow-hidden">
-                <img src={movie.img} alt={movie.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#111] via-transparent to-transparent"></div>
-                <div className="absolute top-3 right-3">
-                  <span className={`text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 rounded-full backdrop-blur-md ${movie.status === 'now_showing' ? 'bg-[#DDBD68]/90 text-black' : 'bg-black/50 text-white border border-white/20'}`}>
-                    {movie.status === 'now_showing' ? 'Showing' : 'Soon'}
+                <img
+                  src={movie.img}
+                  alt={movie.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0E0E0E] via-[#0E0E0E]/20 to-transparent" />
+
+                {/* Status badge */}
+                <div className="absolute top-3 left-3">
+                  <span className={`flex items-center gap-1.5 text-[9px] uppercase tracking-[0.2em] font-bold px-2.5 py-1.5 rounded-full backdrop-blur-md border ${
+                    movie.status === 'now_showing'
+                      ? 'bg-[#DDBD68]/90 text-[#0C0C0C] border-[#DDBD68]/50'
+                      : 'bg-black/60 text-[#DDBD68]/80 border-white/10'
+                  }`}>
+                    {movie.status === 'now_showing' ? (
+                      <><span className="w-1 h-1 rounded-full bg-current animate-pulse inline-block" />Now Showing</>
+                    ) : (
+                      <><Clock className="w-2.5 h-2.5" />Coming Soon</>
+                    )}
                   </span>
                 </div>
               </div>
-              <div className="p-5 flex-1 flex flex-col justify-between">
+
+              {/* Card Body */}
+              <div className="p-4 flex-1 flex flex-col justify-between gap-3">
                 <div>
-                  <h3 className="text-lg font-serif font-bold text-white mb-1 truncate">{movie.title}</h3>
-                  <div className="flex items-center gap-2 text-white/40 text-xs tracking-wider mb-4">
+                  <h3 className="text-sm font-serif font-bold text-white truncate tracking-wide leading-snug">
+                    {movie.title}
+                  </h3>
+                  <div className="flex items-center gap-1.5 text-white/30 text-[10px] tracking-widest mt-1 uppercase">
                     <Calendar className="w-3 h-3" />
                     <span>{movie.showtimes?.length || 0} Showings Set</span>
                   </div>
                 </div>
-                <button 
+
+                <button
                   onClick={() => onEditMovie(movie)}
-                  className="w-full py-2.5 bg-white/5 hover:bg-[#DDBD68] hover:text-black text-[#DDBD68] border border-[#DDBD68]/20 hover:border-[#DDBD68] rounded-xl text-xs font-bold tracking-widest uppercase transition-all flex items-center justify-center gap-2"
+                  className="w-full py-2 bg-transparent hover:bg-gradient-to-r hover:from-[#DDBD68] hover:via-[#FCEEAA] hover:to-[#DDBD68] text-[#DDBD68] hover:text-[#0C0C0C] border border-[#DDBD68]/25 hover:border-transparent rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Pencil className="w-3 h-3" />
-                  Edit Movie
+                  Edit
                 </button>
               </div>
             </div>

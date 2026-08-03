@@ -4,6 +4,11 @@ import { db } from './firebase';
 export interface ShowtimeDate {
   date: string;
   times: string[];
+  // derived display fields (populated after fetch)
+  isToday?: boolean;
+  dayOfWeek?: string;
+  day?: string;
+  month?: string;
 }
 
 export interface ApiMovie {
@@ -17,6 +22,27 @@ export interface ApiMovie {
   runtime?: string;
   trailerUrl?: string;
   status?: 'now_showing' | 'coming_soon';
+}
+
+function parseShowtimes(showtimes: ShowtimeDate[] = []): ShowtimeDate[] {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return showtimes.map(st => {
+    if (!st.date) return st;
+    const parts = st.date.split('-');
+    const dateObj = parts.length === 3
+      ? new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]))
+      : new Date(st.date);
+
+    if (isNaN(dateObj.getTime())) return st;
+
+    const isToday = dateObj.toDateString() === today.toDateString();
+    const month = dateObj.toLocaleString('default', { month: 'short' }).toUpperCase();
+    const day = dateObj.getDate().toString().padStart(2, '0');
+    const dayOfWeek = dateObj.toLocaleString('default', { weekday: 'short' }).toUpperCase();
+    return { ...st, isToday, month, day, dayOfWeek };
+  });
 }
 
 export interface ApiTicket {
@@ -39,7 +65,10 @@ export const addMovie = async (movie: ApiMovie) => {
 export const fetchAllMovies = async (): Promise<ApiMovie[]> => {
   const moviesCol = collection(db, 'movies');
   const movieSnapshot = await getDocs(moviesCol);
-  return movieSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ApiMovie));
+  return movieSnapshot.docs.map(doc => {
+    const data = doc.data() as ApiMovie;
+    return { ...data, id: doc.id, showtimes: parseShowtimes(data.showtimes || []) };
+  });
 };
 
 export const updateMovie = async (id: string, movie: Partial<ApiMovie>) => {

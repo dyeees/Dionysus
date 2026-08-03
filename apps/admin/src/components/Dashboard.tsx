@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { fetchAllMovies, type ApiMovie } from '../api';
-import { Pencil, Loader2, Clock, Calendar } from 'lucide-react';
+import { Loader2, Clock, Calendar } from 'lucide-react';
 
-export function Dashboard({ onEditMovie }: { onEditMovie?: (movie: ApiMovie) => void }) {
+export function Dashboard({ onMovieClick }: { onMovieClick: (movie: ApiMovie) => void }) {
   const [movies, setMovies] = useState<ApiMovie[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -50,17 +50,23 @@ export function Dashboard({ onEditMovie }: { onEditMovie?: (movie: ApiMovie) => 
           {movies.map(movie => (
             <div
               key={movie.id}
-              className="relative bg-[#0E0E0E] border border-white/[0.06] rounded-2xl overflow-hidden hover:border-[#DDBD68]/25 transition-all duration-500 group flex flex-col shadow-[0_4px_30px_rgba(0,0,0,0.5)] hover:shadow-[0_8px_40px_rgba(0,0,0,0.7),0_0_20px_rgba(221,189,104,0.05)]"
+              onClick={() => onMovieClick(movie)}
+              className="relative bg-[#0E0E0E] border border-white/[0.06] rounded-2xl overflow-hidden hover:border-[#DDBD68]/30 transition-all duration-500 group flex flex-col shadow-[0_4px_30px_rgba(0,0,0,0.5)] hover:shadow-[0_16px_48px_rgba(0,0,0,0.8),0_0_30px_rgba(221,189,104,0.1)] cursor-pointer"
             >
               {/* Poster */}
               <div className="aspect-[2/3] w-full relative overflow-hidden">
                 <img
                   src={movie.img}
                   alt={movie.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  className="w-full h-full object-cover"
                 />
                 {/* Gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0E0E0E] via-[#0E0E0E]/20 to-transparent" />
+                {/* Gold & silver hover tint */}
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none"
+                  style={{ background: 'linear-gradient(160deg, rgba(221,189,104,0.25) 0%, rgba(192,192,210,0.15) 60%, transparent 100%)' }}
+                />
 
                 {/* Status badge */}
                 <div className="absolute top-3 left-3">
@@ -81,7 +87,7 @@ export function Dashboard({ onEditMovie }: { onEditMovie?: (movie: ApiMovie) => 
               {/* Card Body */}
               <div className="p-4 flex-1 flex flex-col justify-between gap-3">
                 <div>
-                  <h3 className="text-sm font-serif font-bold text-white truncate tracking-wide leading-snug">
+                  <h3 className="text-sm font-serif font-bold text-[#DDBD68] truncate tracking-wide leading-snug">
                     {movie.title}
                   </h3>
                   <div className="flex items-center gap-1.5 text-white/30 text-[10px] tracking-widest mt-1 uppercase">
@@ -89,16 +95,6 @@ export function Dashboard({ onEditMovie }: { onEditMovie?: (movie: ApiMovie) => 
                     <span>{movie.showtimes?.length || 0} Showings Set</span>
                   </div>
                 </div>
-
-                {onEditMovie && (
-                  <button
-                    onClick={() => onEditMovie(movie)}
-                    className="w-full py-2 bg-transparent hover:bg-gradient-to-r hover:from-[#DDBD68] hover:via-[#FCEEAA] hover:to-[#DDBD68] text-[#DDBD68] hover:text-[#0C0C0C] border border-[#DDBD68]/25 hover:border-transparent rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <Pencil className="w-3 h-3" />
-                    Edit
-                  </button>
-                )}
               </div>
             </div>
           ))}

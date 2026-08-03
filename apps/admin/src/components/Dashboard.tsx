@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { fetchAllMovies, type ApiMovie } from '../api';
 import { Pencil, Loader2, Clock, Calendar } from 'lucide-react';
 
-export function Dashboard({ onEditMovie }: { onEditMovie: (movie: ApiMovie) => void }) {
+export function Dashboard({ onEditMovie }: { onEditMovie?: (movie: ApiMovie) => void }) {
   const [movies, setMovies] = useState<ApiMovie[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -90,13 +90,15 @@ export function Dashboard({ onEditMovie }: { onEditMovie: (movie: ApiMovie) => v
                   </div>
                 </div>
 
-                <button
-                  onClick={() => onEditMovie(movie)}
-                  className="w-full py-2 bg-transparent hover:bg-gradient-to-r hover:from-[#DDBD68] hover:via-[#FCEEAA] hover:to-[#DDBD68] text-[#DDBD68] hover:text-[#0C0C0C] border border-[#DDBD68]/25 hover:border-transparent rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Pencil className="w-3 h-3" />
-                  Edit
-                </button>
+                {onEditMovie && (
+                  <button
+                    onClick={() => onEditMovie(movie)}
+                    className="w-full py-2 bg-transparent hover:bg-gradient-to-r hover:from-[#DDBD68] hover:via-[#FCEEAA] hover:to-[#DDBD68] text-[#DDBD68] hover:text-[#0C0C0C] border border-[#DDBD68]/25 hover:border-transparent rounded-lg text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Pencil className="w-3 h-3" />
+                    Edit
+                  </button>
+                )}
               </div>
             </div>
           ))}

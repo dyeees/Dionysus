@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { MovieForm } from './components/MovieForm';
 import { Dashboard } from './components/Dashboard';
@@ -17,6 +17,27 @@ function App() {
   const [selectedMovie, setSelectedMovie] = useState<ApiMovie | null>(null);
   const [editingMovie, setEditingMovie] = useState<ApiMovie | null>(null);
 
+  // Initialize base history state if missing
+  useEffect(() => {
+    if (role && !window.history.state) {
+      window.history.replaceState({ view: 'dashboard' }, '');
+    }
+  }, [role]);
+
+  // Handle popstate for browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      const state = e.state;
+      if (state) {
+        setView(state.view || 'dashboard');
+        setSelectedMovie(state.movie || null);
+        setEditingMovie(state.editingMovie || null);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   // Show login screen until authenticated
   if (!role) {
     return <LoginScreen onLogin={(r) => setRole(r)} />;
@@ -27,17 +48,20 @@ function App() {
     if (newView === 'form') setEditingMovie(null);
     setSelectedMovie(null);
     setView(newView);
+    window.history.pushState({ view: newView, movie: null, editingMovie: null }, '');
   };
 
   const handleMovieClick = (movie: ApiMovie) => {
     setSelectedMovie(movie);
     setView('detail');
+    window.history.pushState({ view: 'detail', movie, editingMovie: null }, '');
   };
 
   const handleEditFromDetail = () => {
     if (role !== 'manager' || !selectedMovie) return;
     setEditingMovie(selectedMovie);
     setView('form');
+    window.history.pushState({ view: 'form', movie: selectedMovie, editingMovie: selectedMovie }, '');
   };
 
   return (
@@ -46,7 +70,12 @@ function App() {
         currentView={view === 'detail' ? 'dashboard' : view}
         onNavigate={handleNavigate}
         role={role}
-        onLogout={() => { setRole(null); setView('dashboard'); setSelectedMovie(null); }}
+        onLogout={() => { 
+          setRole(null); 
+          setView('dashboard'); 
+          setSelectedMovie(null);
+          window.history.replaceState(null, '');
+        }}
       />
       <main>
         {view === 'dashboard' && (
@@ -65,7 +94,6 @@ function App() {
               movie={selectedMovie}
               role={role}
               onEdit={handleEditFromDetail}
-              onBack={() => { setSelectedMovie(null); setView('dashboard'); }}
             />
           </main>
         )}

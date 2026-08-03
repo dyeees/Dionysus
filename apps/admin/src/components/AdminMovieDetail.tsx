@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowLeft, Pencil } from 'lucide-react';
+import { Pencil } from 'lucide-react';
 import type { ApiMovie } from '../api';
 import type { Role } from '../App';
 
@@ -8,7 +8,6 @@ interface AdminMovieDetailProps {
   movie: ApiMovie;
   role: Role;
   onEdit: () => void;
-  onBack: () => void;
 }
 
 function formatTime(time24: string) {
@@ -41,38 +40,12 @@ const MetaValue = ({ children }: { children: React.ReactNode }) => (
   </span>
 );
 
-export function AdminMovieDetail({ movie, role, onEdit, onBack }: AdminMovieDetailProps) {
+export function AdminMovieDetail({ movie, role, onEdit }: AdminMovieDetailProps) {
   const [showTrailer, setShowTrailer] = useState(false);
   const hasShowtimes = movie.showtimes && movie.showtimes.length > 0;
 
   return (
     <div className="flex flex-col gap-10 animate-fade-up">
-
-      {/* Back + Edit row */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 text-[#DDBD68]/60 hover:text-[#DDBD68] transition-colors duration-200 text-xs tracking-widest uppercase font-semibold cursor-pointer group"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-200" />
-          Back
-        </button>
-
-        {role === 'manager' && (
-          <button
-            onClick={onEdit}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs tracking-widest font-bold uppercase cursor-pointer transition-all duration-300"
-            style={{
-              background: 'linear-gradient(135deg, #DDBD68 0%, #FCEEAA 50%, #DDBD68 100%)',
-              color: '#0C0C0C',
-              boxShadow: '0 0 24px rgba(221,189,104,0.3)',
-            }}
-          >
-            <Pencil className="w-3.5 h-3.5" />
-            Edit Movie
-          </button>
-        )}
-      </div>
 
       {/* Hero — identical to user app */}
       <div className="relative w-full rounded-2xl overflow-hidden" style={{ minHeight: 220 }}>
@@ -118,17 +91,34 @@ export function AdminMovieDetail({ movie, role, onEdit, onBack }: AdminMovieDeta
               )}
             </div>
 
-            {movie.trailerUrl && (
-              <button
-                onClick={() => setShowTrailer(true)}
-                className="mt-3 flex items-center gap-2 bg-[#DDBD68]/10 hover:bg-[#DDBD68]/20 border border-[#DDBD68]/30 hover:border-[#DDBD68]/60 text-[#DDBD68] px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-all duration-300 cursor-pointer w-max"
-              >
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-                Watch Trailer
-              </button>
-            )}
+            <div className="mt-3 flex flex-wrap items-center gap-4">
+              {movie.trailerUrl && (
+                <button
+                  onClick={() => setShowTrailer(true)}
+                  className="flex items-center gap-2 bg-[#DDBD68]/10 hover:bg-[#DDBD68]/20 border border-[#DDBD68]/30 hover:border-[#DDBD68]/60 text-[#DDBD68] px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-all duration-300 cursor-pointer w-max"
+                >
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                  Watch Trailer
+                </button>
+              )}
+              
+              {role === 'manager' && (
+                <button
+                  onClick={onEdit}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-full text-xs tracking-widest font-bold uppercase cursor-pointer transition-all duration-300 w-max"
+                  style={{
+                    background: 'linear-gradient(135deg, #DDBD68 0%, #FCEEAA 50%, #DDBD68 100%)',
+                    color: '#0C0C0C',
+                    boxShadow: '0 0 24px rgba(221,189,104,0.3)',
+                  }}
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                  Edit Movie
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

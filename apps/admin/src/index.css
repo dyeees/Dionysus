@@ -26,9 +26,12 @@ body {
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #0A0A0A; }
-::-webkit-scrollbar-thumb { background: #DDBD68; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #FCEEAA; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(221,189,104,0.35);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover { background: #DDBD68; }
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }

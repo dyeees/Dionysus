@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { fetchTicketByRef, type ApiTicket } from '../api';
-import { CheckCircle2, XCircle, ScanLine, RotateCcw } from 'lucide-react';
+import { CheckCircle2, XCircle, RotateCcw } from 'lucide-react';
 
 type ScanState = 'scanning' | 'loading' | 'valid' | 'invalid';
 

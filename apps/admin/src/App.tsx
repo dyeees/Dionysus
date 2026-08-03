@@ -77,12 +77,12 @@ function App() {
           window.history.replaceState(null, '');
         }}
       />
-      <main className="flex-1 flex flex-col">
+      <main className="flex flex-col">
         {view === 'dashboard' && (
           <Dashboard onMovieClick={handleMovieClick} />
         )}
         {view === 'detail' && selectedMovie && (
-          <div className="relative flex-1 flex flex-col px-4 py-8 sm:px-10 sm:py-12 lg:px-16 lg:py-14 mx-auto w-[calc(100%-2rem)] sm:w-full max-w-6xl mt-24 mb-4 bg-[#0C0C0C]/75 backdrop-blur-sm rounded-2xl border border-white/[0.06] shadow-[0_20px_80px_rgba(0,0,0,0.5)]">
+          <div className="relative flex flex-col px-4 py-8 sm:px-10 sm:py-12 lg:px-16 lg:py-14 mx-auto w-[calc(100%-2rem)] sm:w-full max-w-6xl mt-24 mb-4 bg-[#0C0C0C]/75 backdrop-blur-sm rounded-2xl border border-white/[0.06] shadow-[0_20px_80px_rgba(0,0,0,0.5)]">
             <div
               className="absolute inset-0 pointer-events-none border-y-[2px] border-[#DDBD68] rounded-2xl opacity-40"
               style={{

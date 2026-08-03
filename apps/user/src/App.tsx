@@ -193,7 +193,7 @@ function App() {
       />
 
       {/* Main Content Area */}
-      <main className="relative flex flex-col px-4 py-8 sm:px-10 sm:py-12 lg:px-16 lg:py-14 mx-auto w-[calc(100%-2rem)] sm:w-full max-w-6xl my-4 sm:my-8 bg-[#0C0C0C]/75 backdrop-blur-sm rounded-2xl border border-white/[0.06] shadow-[0_20px_80px_rgba(0,0,0,0.5)]">
+      <main className="relative flex flex-col px-4 py-8 sm:px-10 sm:py-12 lg:px-16 lg:py-14 mx-auto w-[calc(100%-2rem)] sm:w-full max-w-6xl mt-24 mb-8 bg-[#0C0C0C]/75 backdrop-blur-sm rounded-2xl border border-white/[0.06] shadow-[0_20px_80px_rgba(0,0,0,0.5)]">
         {/* Fading Border Overlay */}
         <div
           className="absolute inset-0 pointer-events-none border-y-[2px] border-[#DDBD68] rounded-2xl opacity-40"

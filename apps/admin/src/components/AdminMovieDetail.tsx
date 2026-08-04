@@ -158,7 +158,86 @@ export function AdminMovieDetail({ movie, role, onEdit, onSaved }: AdminMovieDet
           background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%23DDBD68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>');
           cursor: pointer;
         }
+        .edit-input {
+          background: rgba(221,189,104,0.06);
+          border: 1px solid rgba(221,189,104,0.25);
+          border-radius: 8px;
+          padding: 8px 12px;
+          color: #FCEEAA;
+          outline: none;
+          transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+          width: 100%;
+        }
+        .edit-input:hover {
+          border-color: rgba(221,189,104,0.5);
+          background: rgba(221,189,104,0.09);
+        }
+        .edit-input:focus {
+          border-color: #DDBD68;
+          background: rgba(221,189,104,0.12);
+          box-shadow: 0 0 0 3px rgba(221,189,104,0.1);
+        }
+        .edit-input::placeholder { color: rgba(252,238,170,0.3); }
+        .edit-title-input {
+          background: rgba(221,189,104,0.06);
+          border: 1px solid rgba(221,189,104,0.25);
+          border-radius: 10px;
+          padding: 8px 14px;
+          color: #DDBD68;
+          outline: none;
+          transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+          width: 100%;
+        }
+        .edit-title-input:hover { border-color: rgba(221,189,104,0.5); background: rgba(221,189,104,0.09); }
+        .edit-title-input:focus { border-color: #DDBD68; background: rgba(221,189,104,0.12); box-shadow: 0 0 0 3px rgba(221,189,104,0.1); }
+        .edit-title-input::placeholder { color: rgba(221,189,104,0.25); }
       `}</style>
+
+      {/* Edit Mode Banner */}
+      {isEditing && (
+        <div
+          className="flex items-center justify-between px-4 py-3 rounded-xl sticky top-4 z-50"
+          style={{
+            background: 'linear-gradient(90deg, rgba(221,189,104,0.12) 0%, rgba(221,189,104,0.06) 100%)',
+            border: '1px solid rgba(221,189,104,0.3)',
+            boxShadow: '0 0 24px rgba(221,189,104,0.08)',
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-[#DDBD68] animate-pulse" />
+            <span
+              className="text-[#DDBD68] text-xs font-bold uppercase tracking-[0.25em]"
+              style={{ fontFamily: "'Inter', sans-serif" }}
+            >
+              Editing Mode
+            </span>
+            <span className="text-[#DDBD68]/40 text-xs hidden sm:inline">— changes won't save until you click Save</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleCancelEdit}
+              disabled={isSaving}
+              className="px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest text-[#DDBD68]/60 hover:text-[#DDBD68] hover:bg-[#DDBD68]/10 transition-colors disabled:opacity-40 border border-transparent hover:border-[#DDBD68]/20"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="flex items-center gap-2 px-5 py-1.5 rounded-lg text-xs tracking-widest font-bold uppercase cursor-pointer transition-all duration-300 disabled:opacity-50"
+              style={{
+                background: 'linear-gradient(135deg, #DDBD68 0%, #FCEEAA 50%, #DDBD68 100%)',
+                color: '#0C0C0C',
+                boxShadow: '0 0 16px rgba(221,189,104,0.35)',
+              }}
+            >
+              {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Pencil className="w-3.5 h-3.5" />}
+              {isSaving ? (isUploading ? 'Uploading...' : 'Saving...') : 'Save Changes'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Hero */}
       <div className="relative w-full rounded-2xl overflow-hidden" style={{ minHeight: 220 }}>
         {/* Blurred bg */}
@@ -186,15 +265,18 @@ export function AdminMovieDetail({ movie, role, onEdit, onSaved }: AdminMovieDet
           </div>
 
           {/* Text */}
-          <div className="flex flex-col justify-end gap-3 pt-2 sm:pt-4 w-full">
+          <div className="flex flex-col justify-end gap-4 pt-2 sm:pt-4 w-full">
             {isEditing ? (
-              <input
-                value={editData.title}
-                onChange={e => setEditData({...editData, title: e.target.value})}
-                className="text-[#DDBD68] leading-tight font-black tracking-wider m-0 bg-transparent border-b border-dashed border-[#DDBD68]/40 hover:border-[#DDBD68]/80 focus:border-[#DDBD68] focus:outline-none w-full pb-1 transition-colors"
-                style={{ fontFamily: "'Cinzel', serif", fontSize: 'clamp(1.4rem, 3vw, 2.4rem)' }}
-                placeholder="Movie Title"
-              />
+              <div>
+                <MetaLabel>Title</MetaLabel>
+                <input
+                  value={editData.title}
+                  onChange={e => setEditData({...editData, title: e.target.value})}
+                  className="edit-title-input leading-tight font-black tracking-wider"
+                  style={{ fontFamily: "'Cinzel', serif", fontSize: 'clamp(1.1rem, 2.5vw, 1.8rem)' }}
+                  placeholder="Movie Title"
+                />
+              </div>
             ) : (
               <h2
                 className="text-[#DDBD68] leading-tight font-black tracking-wider m-0"
@@ -204,27 +286,29 @@ export function AdminMovieDetail({ movie, role, onEdit, onSaved }: AdminMovieDet
               </h2>
             )}
 
-            <div className="flex flex-wrap gap-x-6 gap-y-2">
-              <div>
+            <div className="flex flex-wrap gap-x-4 gap-y-3">
+              <div className="flex flex-col gap-1">
                 <MetaLabel>Runtime</MetaLabel>
                 {isEditing ? (
                   <input
                     value={editData.runtime}
                     onChange={e => setEditData({...editData, runtime: e.target.value})}
-                    className="text-[#FCEEAA] font-medium text-sm leading-snug bg-transparent border-b border-dashed border-[#FCEEAA]/30 hover:border-[#FCEEAA]/70 focus:border-[#FCEEAA] focus:outline-none w-24 pb-0.5 transition-colors"
+                    className="edit-input text-sm font-medium"
+                    style={{ width: '120px' }}
                     placeholder="e.g. 2h 28m"
                   />
                 ) : (
                   <MetaValue>{movie.runtime}</MetaValue>
                 )}
               </div>
-              <div>
+              <div className="flex flex-col gap-1">
                 <MetaLabel>Director</MetaLabel>
                 {isEditing ? (
                   <input
                     value={editData.director}
                     onChange={e => setEditData({...editData, director: e.target.value})}
-                    className="text-[#FCEEAA] font-medium text-sm leading-snug bg-transparent border-b border-dashed border-[#FCEEAA]/30 hover:border-[#FCEEAA]/70 focus:border-[#FCEEAA] focus:outline-none w-48 pb-0.5 transition-colors"
+                    className="edit-input text-sm font-medium"
+                    style={{ width: '200px' }}
                     placeholder="Director Name"
                   />
                 ) : (
@@ -233,14 +317,15 @@ export function AdminMovieDetail({ movie, role, onEdit, onSaved }: AdminMovieDet
               </div>
             </div>
 
-            <div className="mt-3 flex flex-col gap-3">
+            <div className="flex flex-col gap-3">
               {isEditing && (
-                <div className="w-full">
+                <div className="flex flex-col gap-1">
                   <MetaLabel>Trailer URL</MetaLabel>
                   <input
                     value={editData.trailerUrl}
                     onChange={e => setEditData({...editData, trailerUrl: e.target.value})}
-                    className="text-[#DDBD68] text-xs font-mono w-full max-w-sm bg-black/20 border-b border-dashed border-[#DDBD68]/40 hover:border-[#DDBD68]/80 focus:border-[#DDBD68] focus:outline-none py-1 transition-colors"
+                    className="edit-input text-xs font-mono"
+                    style={{ maxWidth: '360px' }}
                     placeholder="YouTube URL"
                   />
                 </div>
@@ -273,31 +358,6 @@ export function AdminMovieDetail({ movie, role, onEdit, onSaved }: AdminMovieDet
                     Edit Movie
                   </button>
                 )}
-
-                {isEditing && (
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={handleCancelEdit}
-                      disabled={isSaving}
-                      className="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest text-[#DDBD68]/70 hover:text-[#DDBD68] hover:bg-[#DDBD68]/10 transition-colors disabled:opacity-50"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleSave}
-                      disabled={isSaving}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-full text-xs tracking-widest font-bold uppercase cursor-pointer transition-all duration-300 w-max disabled:opacity-50"
-                      style={{
-                        background: 'linear-gradient(135deg, #DDBD68 0%, #FCEEAA 50%, #DDBD68 100%)',
-                        color: '#0C0C0C',
-                        boxShadow: '0 0 24px rgba(221,189,104,0.3)',
-                      }}
-                    >
-                      {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Pencil className="w-3.5 h-3.5" />}
-                      {isSaving ? (isUploading ? 'Uploading...' : 'Saving...') : 'Save Changes'}
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -306,14 +366,16 @@ export function AdminMovieDetail({ movie, role, onEdit, onSaved }: AdminMovieDet
 
       {/* Details Grid */}
       <div className="flex flex-col gap-6">
-        <div className="animate-fade-up animate-fade-up-delay-1">
+        <div className="animate-fade-up animate-fade-up-delay-1 flex flex-col gap-1">
           <MetaLabel>Synopsis</MetaLabel>
           {isEditing ? (
             <textarea
               value={editData.synopsis}
               onChange={e => setEditData({...editData, synopsis: e.target.value})}
-              rows={4}
-              className="text-[#DDBD68]/80 text-sm leading-relaxed max-w-3xl mt-1 w-full bg-black/10 border border-dashed border-[#DDBD68]/30 hover:border-[#DDBD68]/60 focus:border-[#DDBD68] focus:bg-black/30 outline-none rounded-lg p-3 -ml-3 resize-none transition-all"
+              rows={5}
+              className="edit-input text-sm leading-relaxed max-w-3xl resize-none"
+              style={{ fontFamily: "'Inter', sans-serif" }}
+              placeholder="Movie synopsis..."
             />
           ) : (
             movie.synopsis && (
@@ -324,13 +386,13 @@ export function AdminMovieDetail({ movie, role, onEdit, onSaved }: AdminMovieDet
           )}
         </div>
 
-        <div className="animate-fade-up animate-fade-up-delay-2">
+        <div className="animate-fade-up animate-fade-up-delay-2 flex flex-col gap-1">
           <MetaLabel>Cast</MetaLabel>
           {isEditing ? (
             <input
               value={editData.cast}
               onChange={e => setEditData({...editData, cast: e.target.value})}
-              className="text-[#FCEEAA]/80 text-xs tracking-wide w-full max-w-3xl bg-transparent border-b border-dashed border-[#DDBD68]/30 hover:border-[#DDBD68]/60 focus:border-[#DDBD68] outline-none mt-1 pb-1 transition-colors"
+              className="edit-input text-sm max-w-3xl"
               placeholder="Comma separated names"
             />
           ) : (
@@ -367,7 +429,7 @@ export function AdminMovieDetail({ movie, role, onEdit, onSaved }: AdminMovieDet
           {isEditing && (
             <button
               onClick={addDate}
-              className="text-xs text-[#DDBD68]/70 hover:text-[#DDBD68] flex items-center gap-1 bg-[#DDBD68]/10 px-3 py-1.5 rounded-lg transition-colors"
+              className="text-xs text-[#DDBD68]/70 hover:text-[#DDBD68] flex items-center gap-1 bg-[#DDBD68]/10 hover:bg-[#DDBD68]/15 px-3 py-1.5 rounded-lg transition-colors border border-[#DDBD68]/20 hover:border-[#DDBD68]/40"
             >
               <Plus className="w-3 h-3" /> Add Date
             </button>
@@ -375,7 +437,7 @@ export function AdminMovieDetail({ movie, role, onEdit, onSaved }: AdminMovieDet
         </div>
 
         {hasShowtimes ? (
-          <div className="flex gap-6 overflow-x-auto pb-4 w-full scrollbar-thin">
+          <div className="flex gap-6 overflow-x-auto pb-4 pt-3 px-3 -mx-3 w-full scrollbar-thin">
             {(isEditing ? editData.showtimes : movie.showtimes)?.map((dateObj, idx) => {
               const today = new Date();
               today.setHours(0, 0, 0, 0);
@@ -416,7 +478,7 @@ export function AdminMovieDetail({ movie, role, onEdit, onSaved }: AdminMovieDet
                       type="date"
                       value={dateObj.date}
                       onChange={e => updateDate(idx, e.target.value)}
-                      className="gold-date-picker text-center pl-6 bg-black/30 border border-dashed border-[#DDBD68]/40 focus:border-[#DDBD68] text-[#FCEEAA] text-[10px] rounded py-1.5 w-full outline-none transition-colors"
+                      className="gold-date-picker text-center pl-6 bg-[#DDBD68]/06 border border-[#DDBD68]/25 hover:border-[#DDBD68]/50 focus:border-[#DDBD68] focus:bg-[#DDBD68]/10 text-[#FCEEAA] text-[10px] rounded-lg py-1.5 w-full outline-none transition-all"
                     />
                   ) : (
                     <>
@@ -444,7 +506,7 @@ export function AdminMovieDetail({ movie, role, onEdit, onSaved }: AdminMovieDet
                             type="time"
                             value={time}
                             onChange={e => updateTime(idx, tIdx, e.target.value)}
-                            className="gold-time-picker w-full py-1.5 text-center pl-6 text-[10px] font-semibold tracking-widest bg-black/30 border border-dashed border-[#DDBD68]/40 focus:border-[#DDBD68] text-[#DDBD68] rounded outline-none transition-colors"
+                            className="gold-time-picker w-full py-1.5 text-center pl-6 text-[10px] font-semibold tracking-widest bg-[#DDBD68]/06 border border-[#DDBD68]/25 hover:border-[#DDBD68]/50 focus:border-[#DDBD68] text-[#DDBD68] rounded-lg outline-none transition-all"
                           />
                           <button onClick={() => removeTime(idx, tIdx)} className="text-white/20 hover:text-red-400 p-1 shrink-0">
                             <X className="w-3 h-3" />
